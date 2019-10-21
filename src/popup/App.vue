@@ -30,16 +30,6 @@
       return {}
     },
   }
-  window.onload = function () {
-    document.getElementById('sign-in-button').addEventListener('click', function () {
-        chrome.identity.getAuthToken({ interactive: true }, function (token) {
-            // код работы с полученым токеном
-
-            //проверка получения токена
-            console.log("token: ", token);
-        });
-    });
-  };
 </script>
 
 <style lang="scss" scoped>
