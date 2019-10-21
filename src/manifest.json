@@ -1,23 +1,28 @@
 {
-  "name": "Research assistant",
-  "description": "Научный ассистент",
-  "version": "1.0",
+  "name": "new-tab-page",
+  "description": "A Vue.js web extension",
+  "version": null,
   "manifest_version": 2,
+  "icons": {
+    "48": "icons/icon_48.png",
+    "128": "icons/icon_128.png"
+  },
+  "browser_action": {
+    "default_title": "new-tab-page"
+  },
   "background": {
     "scripts": [
       "background.js"
     ]
   },
   "permissions": [
-    "identity"
+  "identity"
   ],
   "oauth2": {
-    "client_id": "334311085163-p9g9dtuupglvhiepjq05u9rg25jjp4uh.apps.googleusercontent.com",
+    "client_id": "1075602098668-j9sg81i38mqe35o0eb8bt57v6idtknqm.apps.googleusercontent.com",
     "scopes": [
-      "https://www.googleapis.com/auth/drive"
+      "https://www.googleapis.com/auth/drive",
+      "https://www.googleapis.com/auth/drive.appdata"
     ]
-  },
-  "browser_action": {
-    "default_title": "Научный ассистент"
   }
 }
