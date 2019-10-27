@@ -1,14 +1,12 @@
 import Vue from 'vue'
 import App from './App'
 
+console.log('TEST');
 
-
-
-
-/* eslint-disable no-new */
-new Vue({
-  el: '#app',
-  
-  
-  render: h => h(App)
-})
+var app = new Vue({
+  data () {
+    return {
+        text: 'Hello, World'
+    };
+  }
+}).$mount("#app")
