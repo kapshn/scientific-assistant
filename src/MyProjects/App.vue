@@ -24,7 +24,8 @@
         v-bind:project="project"
         v-on:popupWindowVisibility="visible = $event"
         v-on:selectedProject="selectedProject = $event"
-        v-on:deleteMark="deleteMark = $event"
+        v-on:deleteMark="deleteMark = $event;"
+        v-on:rerender="Rerender()"
         ></Project>
       </div>
     </div>

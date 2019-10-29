@@ -122,7 +122,8 @@ export default {
     CloseModal: function() { closeModal(this); },
     DeleteFile: function() { deleteFile(this); },
     SetModalWindowMark: function() { setModalWindowMark(this); },
-    CreateFile: function () { createFile(this); },
+    CreateFile: function() { createFile(this); },
+    Rerender: function() { getFilesList(this); },
   },
   mounted: function() {
     getFilesList(this);

@@ -11,7 +11,6 @@ const config = {
   context: __dirname + '/src',
   entry: {
     'background': './background.js',
-    'popup/popup': './popup/popup.js',
     'Authorization/authorization': './Authorization/authorization.js'
   },
   output: {
@@ -78,7 +77,7 @@ const config = {
     new CopyWebpackPlugin([
       { from: 'images', to: 'images', ignore: ['icon.xcf'] },
       { from: 'mxgraph', to: 'mxgraph' },
-      { from: 'popup/popup.html', to: 'popup/popup.html', transform: transformHtml },
+      //{ from: 'popup/popup.html', to: 'popup/popup.html', transform: transformHtml },
       { from: 'Authorization/authorization.html', to: 'Authorization/authorization.html', transform: transformHtml },
       {
         from: 'manifest.json',

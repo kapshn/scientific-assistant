@@ -1,10 +1,13 @@
 <template>
-
-  <div id="project" class="project" v-on:click="OpenProject();">
+  <div id="project" class="project" v-on:click="OpenProject();" >
     <i class="material-icons project__img">folder</i>
-    <div class="project__name">{{project.name}}</div>
-    <input type="text" class="project__nameEdit">
-    <i class="material-icons project__edit">create</i>
+    <router-link class="project__name" v-if="!editVisibility" :to="{ name: 'desk', params: { id: project.id }}">
+      {{project.name}}
+    </router-link>
+    <input type="text" v-if="editVisibility" id="projectName" class="project__nameEdit">
+    <i class="material-icons project__cancel" v-if="editVisibility" v-on:click="CancelEdit();">clear</i>
+    <i class="material-icons project__apply" v-if="editVisibility" v-on:click="ApplyFileName();">done</i>
+    <i class="material-icons project__edit" v-on:click="EditFileName();">create</i>
     <i class="material-icons project__delete" v-on:click="SelectFile();">delete</i>
   </div>
 
@@ -22,19 +25,32 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  //cursor: pointer;
 
   &__img {
     font-size: 25px;
   }
 
   &__name {
+    text-decoration: none;
+    color: black;
     margin-left: 15px;
     font-size: 24px;
   }
 
   &__nameEdit {
-    display: none;
+    border: none;
+    border-bottom: 1px solid black;
+    outline: none;
+    width: 100%;
+    margin: 0 5px;
+  }
+
+  &__cancel {
+      cursor: pointer;
+  }
+
+  &__apply {
+    cursor: pointer;
   }
 
   &__edit {

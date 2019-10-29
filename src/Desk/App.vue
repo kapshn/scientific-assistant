@@ -1,17 +1,10 @@
 <template>
-  <!--p>{{ message }}</p-->
+  <div id="app">
+    {{id}}
+  </div>
 </template>
 
-<script>
-export default {
-  data () {
-    return {
-      message: "My new tab page"
-    }
-  }
-}
-
-</script>
+<script src="./desk.js"></script>
 
 <style scoped>
 p {
