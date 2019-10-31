@@ -3,6 +3,9 @@ import App from './App'
 import VueRouter from 'vue-router'
 import MyProjects from '../MyProjects/App'
 import Desk from '../Desk/App'
+import Upload_Select from '../Desk/components/Upload_Select.vue'
+import Drive from '../Desk/components/Drive.vue'
+import Computer from '../Desk/components/Computer.vue'
 
 Vue.use(VueRouter);
 
@@ -16,7 +19,25 @@ const routes = [
     component: App
   },
   { path: '/myprojects', name:"myprojects", component: MyProjects},
-  { path: '/desk/:id', name: 'desk', component: Desk, props: true},
+  { path: '/desk/:id', name: 'desk', component: Desk, props: true,
+  redirect: { name: 'uploadselect' },
+  children: [
+        {
+          path: 'uploadselect',
+          name: 'uploadselect',
+          component: Upload_Select
+        },
+        {
+          path: 'drive',
+          name: 'drive',
+          component: Drive
+        },
+        {
+          path: 'computer',
+          name: 'computer',
+          component: Computer
+        },
+      ]},
 ]
 
 window.resizeTo(winL, winH);

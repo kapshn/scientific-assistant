@@ -1,14 +1,35 @@
 import Vue from 'vue';
 import App from './App';
+import ModalWindow from './components/ModalWindow.vue'
+
+Vue.component('ModalWindow', ModalWindow);
+
+//ATATATATATATATATATATATATATATATATATATATATAT
+var selectedFile = null;
 
 export default {
   data () {
-    return {}
+    return {
+      modalVisibility: false,
+
+    }
   },
   props: ['id'],
+  methods: {
+    SelectFile: function(file) {
+      selectFile(file,this)
+    }
+  },
   mounted: function() {
     getXML(this);
   }
+}
+
+//ATATATATATATATATATATATATATATATATATATATATAT
+function selectFile(file,t) {
+  t.modalVisibility = false;
+  selectedFile = file;
+  console.log("name = ",selectedFile.name,"; id = ",selectedFile.id);
 }
 
 function getXML(t) {
@@ -21,7 +42,6 @@ function getXML(t) {
       xhr.setRequestHeader('Authorization', 'Bearer ' + token);
       xhr.onload = () => {
         xmlBody = xhr.responseText;
-        console.log(xmlBody);
       };
       xhr.send();
   });
