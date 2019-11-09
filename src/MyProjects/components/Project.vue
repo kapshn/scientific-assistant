@@ -1,7 +1,7 @@
 <template>
   <div id="project" class="project" v-on:click="OpenProject();" >
     <i class="material-icons project__img">folder</i>
-    <router-link class="project__name" v-if="!editVisibility" :to="{ name: 'desk', params: { id: project.id }}">
+    <router-link class="project__name" v-if="!editVisibility" :to="{ name: 'desk', query: { id: project.id, name: project.name} }">
       {{project.name}}
     </router-link>
     <input type="text" v-if="editVisibility" id="projectName" class="project__nameEdit">
