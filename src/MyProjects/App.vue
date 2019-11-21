@@ -4,10 +4,10 @@
     <header class="header">
       <img class="header__img" src="../images/logo.png" alt="research assistant logo">
       <h1 class="header__title">Научный ассистент</h1>
-      <div class="header-profile" @click="LogOut()">
+      <div class="header-profile" >
         <div class="header-profile__name">{{profile}}</div>
         <i class="material-icons header-profile__icon"
-        >exit_to_app</i>
+        @click="LogOut()">exit_to_app</i>
       </div>
     </header>
 
@@ -34,20 +34,23 @@
     <div class="modal" v-if="visible">
       <div class="modal__mask" @click="CloseModal()"></div>
       <div class="modal-window" v-if="deleteMark">
-          <h1 class="modal-window__title">Удалить проект: {{selectedProject.name}} ?</h1>
+          <div class="modal-window__title">Удалить проект</div>
+          <div class="modal-window__titleName">{{selectedProject.name}} ?</div>
           <div class="modal-window__buttons">
-            <button type="button" @click="DeleteFile()">Да</button>
-            <button type="button" @click="CloseModal()">Нет</button>
+            <button type="button" @click="DeleteFile()"><i class="material-icons">delete</i></button>
+            <button type="button" @click="CloseModal()">отмена</button>
           </div>
       </div>
       <div class="modal-window" v-else>
-        <h1 class="modal-window__title">Создать проект</h1>
-        <div class="modal-window__inputTitle">Введите имя проекта:</div>
-        <input type="text" class="modal-window__input" id="fileName">
-        <div class="modal-window__buttons">
-          <button type="button" @click="CreateFile()">Создать</button>
-          <button type="button" @click="CloseModal()">Отмена</button>
-        </div>
+        <form action="">
+          <h1 class="modal-window__title">Создать проект</h1>
+          <div class="modal-window__inputTitle">Имя проекта*</div>
+          <input type="text" class="modal-window__input" id="fileName" v-model="fileName">
+          <div class="modal-window__buttons">
+            <button class="createbutton" type="button" @click="CreateFile()" :disabled="fileName.length == 0">Создать</button>
+            <button type="button" @click="CloseModal()">Отмена</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -99,17 +102,6 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    cursor: pointer;
-
-
-    &:hover {
-      .header-profile__name {
-        color: #0c73b8;
-      }
-      .header-profile__icon {
-        color: #0c73b8;
-      }
-    }
 
     &__name {
       font-size: 24px;
@@ -121,6 +113,10 @@ body {
       font-size: 26px;
       color: #555;
       margin-left: 20px;
+      cursor: pointer;
+      &:hover {
+        color: #0c73b8;
+      }
     }
   }
 
@@ -155,8 +151,8 @@ body {
 
   &-block {
     border-radius: 5px;
-    border: 1px solid black;
-    box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.29);
+    border: 1px solid #777;
+    box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.20);
     padding: 25px;
     display: flex;
     flex-wrap: wrap;
@@ -170,6 +166,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
+
 
   &__mask {
     z-index: 9998;
@@ -187,26 +184,38 @@ body {
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
     z-index: 9999;
-    border: 1px solid #333;
+    border: 1px solid grey;
     border-radius: 5px;
     background-color: white;
+    box-shadow: 0px 0px 26px 6px rgba(0,0,0,0.2);
 
     &__title {
+      text-align: center;
+      font-weight: 400;
+      font-size: 30px;
+    }
 
+    &__titleName {
+      text-align: center;
+      font-weight: 600;
+      font-size: 24px;
+      min-width: 300px;
+      margin-bottom: 30px;
     }
 
     &__inputTitle {
-      display: inline-block;
-      font-size: 18px;
+      font-size: 14px;
+      color: black;
+      opacity: 0.6;
     }
 
     &__input {
-      display: inline-block;
       outline: none;
       border: none;
       font-size: 18px;
-      margin-left: 5px;
-      border-bottom: 1px solid black;
+      width: 300px;
+      margin: 5px 0 15px 0;
+      border-bottom: 1px solid #333;
     }
 
     &__buttons {
@@ -217,16 +226,32 @@ body {
       justify-content: space-between;
       margin-top: 15px;
 
+      & .createbutton {
+        border: 1px solid rgb(6,50,110);
+        border-radius: 3px;
+        padding: 5px 10px;
+        color: white;
+        background-color: rgb(6,113,185);
+        font-size: 18px;
+        cursor: pointer;
+        &:disabled {
+          opacity: 0.6;
+        }
+      }
+
       & button {
-        border: 2px solid black;
-        border-radius: 2px;
-        color: black;
+        border: 1px solid #333;
+        border-radius: 3px;
+        padding: 5px 10px;
+        color: rgb(200,0,0);
+        min-width: 80px;
         background-color: white;
-        font-size: 24px;
-        height: 35px;
+        font-size: 18px;
         cursor: pointer;
 
         &:last-child {
+          background-color: white;
+          color: #777;
 
         }
       }

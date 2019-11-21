@@ -25,7 +25,7 @@
 
 <style lang="scss" scoped>
   body{
-      margin:0;
+    margin: 0!important;
   }
 
   .header{
