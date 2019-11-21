@@ -12,6 +12,9 @@ export default {
     },
     visible: Boolean
   },
+  watch: {
+    project: function() {console.log(this.project)}
+  },
   methods: {
     SelectFile: function () {
       selectFile(this);
@@ -27,7 +30,15 @@ export default {
     },
     ApplyFileName: function() {
       applyChanges(this);
-    }
+    },
+    ConfirmRedirect: function(e) {
+      e.preventDefault();
+      //console.log("ASSSS");
+    },
+
+  },
+  mounted: function() {
+
   }
 }
 

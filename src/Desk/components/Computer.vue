@@ -1,16 +1,34 @@
 <template>
   <div id="computer">
-    <router-link :to="{ name: 'uploadselect' }" class="drive__return">
-      <i class="material-icons">keyboard_backspace</i>
-    </router-link>
-    <h3 class="drive__title">Загрузить файл:</h3>
-    <div class="" v-if="folderId!=null">
-      <input id="uploadFileInput" type="file" >
-      <button v-on:click="UploadFile()">Submit</button>
-      <p>{{message}}</p>
+    <div class="links">
+      <router-link :to="{ name: 'drive' }" class="links__item">Google Drive</router-link>
+      <div class="links__item links__selected">Компьютер</div>
+    </div>
+    <div class="computer">
+      <div class="computer__upload" v-if="folderId!=null" v-cloak @drop.prevent="addFile" @dragover.prevent>
+
+        <div class="computer-dnd">
+          <h2 class="computer-dnd__title">Перетащите сюда файл <br> или</h2>
+          <label class="file-select">
+            <div class="select-button">
+              <span>загрузите с компьютера</span>
+            </div>
+            <input type="file" ref="myFile" id="uploadFileInput" @change="uploadFile = $refs.myFile.files[0]" />
+          </label>
+
+          <div v-if="uploadFile!=null" class="computer-dnd__fileName">
+            {{uploadFile.name}}
+          </div>
+          <div v-else class="computer-dnd__fileName">
+            Файл не выбран
+          </div>
+          <button :disabled="uploadFile==null" v-on:click="UploadFile()" class="computer-dnd__upload">Загрузить на Google Drive</button>
+        </div>
+
+      </div>
+      <h1 class="computer__loading" v-else>Загрузка папки проекта</h1>
     </div>
 
-    <h1 v-else>Загрузка папки проекта</h1>
   </div>
 </template>
 
@@ -19,22 +37,30 @@
 export default {
   data () {
     return {
-      folderId: null,
-      message: ''
+      uploadFile: null
     }
   },
+  props: ['folderId'],
   methods: {
     UploadFile: function() {
       uploadFile(this);
+    },
+    addFile(e) {
+      let droppedFile = e.dataTransfer.files;
+      if (e.dataTransfer.files.length!=1) {
+        alert("Загрузить можно только 1 файл!");
+        return;
+      }
+      this.uploadFile = e.dataTransfer.files[0];
+      //console.log(e.dataTransfer.files);
     }
   },
   mounted: function() {
-    getAppFolder(this);
   }
 }
 
 function uploadFile(t) {
-  let file = document.getElementById('uploadFileInput').files[0];
+  let file = t.uploadFile;
 
   chrome.identity.getAuthToken({ interactive: true }, function (token) {
     let metadata = {
@@ -63,120 +89,105 @@ function uploadFile(t) {
 
 }
 
-
-function getAppFolder(t) {
-
-    chrome.identity.getAuthToken({ interactive: true }, function (token) {
-      var xhr = new XMLHttpRequest();
-      xhr.open('get', "https://www.googleapis.com/drive/v3/files?" + "q=name%20%3D%20'ResearchAssistantFiles'");
-      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-      xhr.responseType = 'json';
-      xhr.onload = () => {
-        if (xhr.response.files.length==0) {
-          createFolder(t)
-        } else {
-          t.folderId = xhr.response.files[0].id;
-        }
-
-      };
-      xhr.send();
-
-    });
-}
-
-function createFolder(t) {
-  chrome.identity.getAuthToken({ interactive: true }, function (token) {
-    let metadata = {
-        'name': "ResearchAssistantFiles",
-        'mimeType': 'application/vnd.google-apps.folder'
-    };
-
-    let form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-
-    let xhr = new XMLHttpRequest();
-    xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id');
-    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-    xhr.responseType = 'json';
-    xhr.onload = () => {
-      t.folderId = xhr.response.id;
-      console.log(xhr.response.id);
-    };
-    xhr.send(form);
-
-  });
-}
-
 </script>
 
 <style lang="scss" scoped>
-
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-#drive {
+#computer {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.drive {
-
-  &__return {
-    text-decoration: none;
-  }
-
-  &__error {
-
-  }
-
-
-}
-
-.drivelist {
+.computer {
+  background-color: rgb(230,230,230);
   height: 100%;
-  border: 1px solid black;
-  overflow-y: scroll;
-  border: 1px solid black;
-  border-radius: 5px;
-  padding: 10px;
+  width: 100%;
+  position: relative;
 
-  &-item {
-    border: 1px solid black;
-    border-radius: 5px;
-    display: flex;
-    flex-direction: row;
-    padding: 10px;
-    margin-bottom: 10px;
-    align-items: center;
-    cursor: pointer;
+  &__loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+  }
 
-    &__name {
-      font-size: 18px;
-      margin-left: 10px;
+  &__upload {
+    width: calc(100% - 50px);
+    height: calc(100% - 50px);
+    margin: 25px;
+    outline: 5px dashed #999;
+  }
+
+  &-dnd {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    text-align: center;
+
+    &__title {
+      font-size: 40px;
+      margin-bottom: 20px;
+      font-weight: 300;
+      color: #777;
     }
 
-    &__img {
-      height: 50px;
-      width: 50px;
-      background-color: red;
-      border: 1px solid black;
+    &__fileName {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    &__upload {
+      border: 1px solid rgb(6,50,110);
+      border-radius: 3px;
+      padding: 5px 10px;
+      color: white;
+      background-color: rgb(6,113,185);
+      font-size: 18px;
+      cursor: pointer;
+      &:disabled {
+        display: none;
+      }
     }
   }
 }
 
+.links {
+  display: flex;
+  flex-direction: row;
 
+  &__item {
+      text-decoration: none;
+      color: black;
+      font-size: 18px;
+      margin: 10px;
+  }
+
+  &__selected {
+    font-weight: bold;
+    border-bottom: 2px solid rgb(117,149,200);
+  }
+
+}
+
+.file-select > .select-button {
+  padding: 1rem;
+
+  color: white;
+  background-color: #2EA169;
+
+  border-radius: .3rem;
+
+  text-align: center;
+  font-weight: 400;
+  font-size: 30px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+/* Don't forget to hide the original file input! */
+.file-select > input[type="file"] {
+  display: none;
+}
 </style>

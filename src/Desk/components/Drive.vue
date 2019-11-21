@@ -1,15 +1,16 @@
 <template>
   <div id="drive">
-    <router-link :to="{ name: 'uploadselect' }" class="drive__return">
-      <i class="material-icons">keyboard_backspace</i>
-    </router-link>
-    <h3 class="drive__title">Мои файлы:</h3>
+    <div class="links">
+      <div class="links__item links__selected">Google Drive</div>
+      <router-link :to="{ name: 'computer' }" class="links__item">Компьютер</router-link>
+
+    </div>
     <div class="drivelist" v-if="folderId!=null">
       <div class="drivelist-item"
       v-for="driveFile in driveFiles"
       v-on:click="SelectDriveFile(driveFile)"
       >
-        <div class="drivelist-item__img"></div>
+        <div class="drivelist-item__img" v-bind:style="{ 'background-image': 'url(' + driveFile.thumbnailLink + ')' }"></div>
         <div class="drivelist-item__name">
           {{driveFile.name}}
         </div>
@@ -27,18 +28,18 @@
 export default {
   data () {
     return {
-      folderId: null,
       message: "Загрузка файлов...",
       driveFiles: null
     }
   },
+  props: ['folderId'],
   methods: {
     SelectDriveFile: function(file) {
       selectDriveFile(file,this)
     }
   },
   mounted: function() {
-    getAppFolder(this);
+    getDriveFiles(this);
   }
 }
 
@@ -46,31 +47,10 @@ function selectDriveFile(file,t) {
   t.$emit('FileSelected',file);
 }
 
-function getAppFolder(t) {
-
-    chrome.identity.getAuthToken({ interactive: true }, function (token) {
-      var xhr = new XMLHttpRequest();
-      xhr.open('get', "https://www.googleapis.com/drive/v3/files?" + "q=name%20%3D%20'ResearchAssistantFiles'");
-      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-      xhr.responseType = 'json';
-      xhr.onload = () => {
-        if (xhr.response.files.length==1) {
-          t.folderId = xhr.response.files[0].id;
-          getDriveFiles(t);
-        } else {
-          t.message = 'Файлы еще не были созданы'
-        }
-
-      };
-      xhr.send();
-
-    });
-}
-
 function getDriveFiles(t) {
   chrome.identity.getAuthToken({ interactive: true }, function (token) {
     var xhr = new XMLHttpRequest();
-    xhr.open('get', "https://www.googleapis.com/drive/v3/files?q='" + t.folderId + "'+in+parents");
+    xhr.open('get', "https://www.googleapis.com/drive/v3/files?q='" + t.folderId + "'+in+parents&fields=files(id,name,thumbnailLink)");
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.responseType = 'json';
     xhr.onload = () => {
@@ -107,50 +87,60 @@ function getDriveFiles(t) {
   flex-direction: column;
 }
 
-.drive {
-
-  &__return {
-    text-decoration: none;
-  }
-
-  &__error {
-
-  }
-
-
-}
-
 .drivelist {
   height: 100%;
-  border: 1px solid black;
   overflow-y: scroll;
-  border: 1px solid black;
-  border-radius: 5px;
-  padding: 10px;
+  background-color: rgb(230,230,230);
+  padding: 15px;
+  display: flex;
+  flex-wrap: wrap;
 
   &-item {
-    border: 1px solid black;
-    border-radius: 5px;
-    display: flex;
-    flex-direction: row;
     padding: 10px;
-    margin-bottom: 10px;
+    width: 10%;
+    height: 20%;
+    flex: 0 1 14%;
+    margin-bottom: 20px;
     align-items: center;
     cursor: pointer;
 
     &__name {
-      font-size: 18px;
-      margin-left: 10px;
+      font-size: 14px;
+      padding: 0 5px;
+      text-align: center;
     }
 
     &__img {
-      height: 50px;
-      width: 50px;
-      background-color: red;
+      width: 100%;
+      height: 100px;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
       border: 1px solid black;
+    }
+
+    &:hover {
+      border-radius: 5px;
+      background-color: rgb(200,200,200);
     }
   }
 }
 
+.links {
+  display: flex;
+  flex-direction: row;
 
+  &__item {
+      text-decoration: none;
+      color: black;
+      font-size: 18px;
+      margin: 10px;
+  }
+
+  &__selected {
+    font-weight: bold;
+    border-bottom: 2px solid rgb(117,149,200);
+  }
+
+}
 </style>

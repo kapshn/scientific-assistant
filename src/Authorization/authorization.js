@@ -3,7 +3,6 @@ import App from './App'
 import VueRouter from 'vue-router'
 import MyProjects from '../MyProjects/App'
 import Desk from '../Desk/App'
-import Upload_Select from '../Desk/components/Upload_Select.vue'
 import Drive from '../Desk/components/Drive.vue'
 import Computer from '../Desk/components/Computer.vue'
 
@@ -15,17 +14,12 @@ const routes = [
     name: 'App',
     component: App
   },
-  { path: '/myprojects', name:"myprojects", component: MyProjects},
+  { path: '/myprojects', name:"myprojects", component: MyProjects },
   { path: '/desk', name: 'desk', component: Desk, props(route) {
       return  route.query || {}
     },
-    redirect: { name: 'uploadselect' },
+    redirect: { name: 'computer' },
     children: [
-      {
-        path: 'uploadselect',
-        name: 'uploadselect',
-        component: Upload_Select
-      },
       {
         path: 'drive',
         name: 'drive',
@@ -36,7 +30,7 @@ const routes = [
         name: 'computer',
         component: Computer
       },
-    ]    
+    ]
   },
 ]
 
@@ -44,7 +38,6 @@ const router = new VueRouter({
   routes
 })
 
-//here
 function hasQueryParams(route) {
   return !!Object.keys(route.query).length
 }
@@ -56,7 +49,6 @@ router.beforeEach((to, from, next) => {
    next()
  }
 })
-//here
 
 new Vue({
   el: '#Authorization',

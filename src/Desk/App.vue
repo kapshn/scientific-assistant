@@ -9,19 +9,20 @@
       </router-link>
     </header>
 
-    <div id="main-div">
-      <div class='toolbar'>
-        <div class="toolbar__special">
-          <button id="saveButton"></button>
-          <button id="undoButton"></button>
-          <button id="redoButton"></button>
-        </div>
-        <div class="toolbar__notes" id="noteToolbar"></div>
-        <img class="toolbar__img" src="../images/script-text-outline.png" alt="script text icon">
-      </div> 
-      <div id="graphContainer" style="overflow:hidden;cursor:default;">
+    <div class='toolbar' id="toolbar">
+      <div class="toolbar__special">
+        <button id="saveButton"></button>
+        <button id="undoButton"></button>
+        <button id="redoButton"></button>
       </div>
+      <div class="toolbar__notes" id="noteToolbar"></div>
     </div>
+    <div class='editor'>
+      <img id='showTextButton' class="editor__showTextButton" src="../images/script-text-outline.png" alt="script text icon">
+      <div id="graphContainer" style="overflow:hidden;cursor:default;"></div>       
+    </div>
+
+    <iframe id='googleDocIframe' :src="'https://docs.google.com/document/d/' + docId + '/edit'"></iframe>
 
     <div class="modal" v-if="editingWindowVisibility">
       <div class="modal__mask" @click="CloseModal()"></div>
@@ -34,6 +35,7 @@
 
     <ModalWindow
       v-if="uploadFileWindowVisibility"
+      v-bind:folderId="folderId"
       v-on:FileSelected="SelectFile($event)"
       v-on:CloseModalWindow="CloseModal()">
     </ModalWindow>
@@ -128,6 +130,19 @@ body{
   }
 }
 
+.editor{
+  &__showTextButton{
+    margin: 5px 0 0 5px;
+    height: 30px;
+    position: fixed;
+    z-index: 1000;
+
+    &:hover{
+      background-color:red;
+    }
+  }
+}
+
 #saveButton
 {
   height: 30px;
@@ -204,6 +219,12 @@ body{
   border-radius: 5px;
   text-align: center;
   cursor: pointer;
+}
+
+#googleDocIframe{
+  width: 100%;
+  //height: 600px;
+  //display:none;
 }
 
 </style>
