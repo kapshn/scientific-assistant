@@ -37,11 +37,10 @@
 export default {
   data () {
     return {
-      folderId: null,
-      message: '',
       uploadFile: null
     }
   },
+  props: ['folderId'],
   methods: {
     UploadFile: function() {
       uploadFile(this);
@@ -53,11 +52,10 @@ export default {
         return;
       }
       this.uploadFile = e.dataTransfer.files[0];
-      console.log(e.dataTransfer.files);
+      //console.log(e.dataTransfer.files);
     }
   },
   mounted: function() {
-    getAppFolder(this);
   }
 }
 
@@ -89,50 +87,6 @@ function uploadFile(t) {
 
   });
 
-}
-
-
-function getAppFolder(t) {
-
-    chrome.identity.getAuthToken({ interactive: true }, function (token) {
-      var xhr = new XMLHttpRequest();
-      xhr.open('get', "https://www.googleapis.com/drive/v3/files?" + "q=name%20%3D%20'ResearchAssistantFiles'&&fields=files(id,name,thumbnailLink)");
-      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-      xhr.responseType = 'json';
-      xhr.onload = () => {
-        if (xhr.response.files.length==0) {
-          createFolder(t)
-        } else {
-          t.folderId = xhr.response.files[0].id;
-        }
-
-      };
-      xhr.send();
-
-    });
-}
-
-function createFolder(t) {
-  chrome.identity.getAuthToken({ interactive: true }, function (token) {
-    let metadata = {
-        'name': "ResearchAssistantFiles",
-        'mimeType': 'application/vnd.google-apps.folder'
-    };
-
-    let form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-
-    let xhr = new XMLHttpRequest();
-    xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id');
-    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-    xhr.responseType = 'json';
-    xhr.onload = () => {
-      t.folderId = xhr.response.id;
-      console.log(xhr.response.id);
-    };
-    xhr.send(form);
-
-  });
 }
 
 </script>
@@ -229,6 +183,7 @@ function createFolder(t) {
   font-weight: 400;
   font-size: 30px;
   margin-bottom: 20px;
+  cursor: pointer;
 }
 
 /* Don't forget to hide the original file input! */

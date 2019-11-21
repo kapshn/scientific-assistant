@@ -6,6 +6,141 @@ Vue.component('Project', Project);
 
 var current_token;
 
+export default {
+  data () {
+    return {
+      projects: null,
+      profile: '',
+      visible: false,
+      selectedProject: null,
+      deleteMark: false,
+      fileName: '',
+      folderId: null,
+      filesFolderId: null,
+      docsFolderId: null
+
+    }
+  },
+  methods: {
+    LogOut: function() {
+      logOut();
+    },
+    CloseModal: function() { closeModal(this); },
+    DeleteFile: function() { deleteFile(this); },
+    SetModalWindowMark: function() { setModalWindowMark(this); },
+    CreateFile: function() { createFile(this); },
+    Rerender: function() { getFilesList(this); },
+  },
+  mounted: function() {
+    getAppFolder(this);
+
+  },
+  beforeRouteLeave  (to, from, next) {
+    if (
+      event.target.tagName != "I" && event.target.tagName != "INPUT"
+      ||
+      event.target.tagName == "I" && event.target.className == "material-icons project__img"
+    ) next();
+
+  }
+}
+
+function getAppFolder(t) {
+
+    chrome.identity.getAuthToken({ interactive: true }, function (token) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('get', "https://www.googleapis.com/drive/v3/files?" + "q=name%20%3D%20'ResearchAssistantFiles'&&fields=files(id,name,thumbnailLink)");
+      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+      xhr.responseType = 'json';
+      xhr.onload = () => {
+        if (xhr.response.files.length==0) {
+          createFolder(t);
+          getFilesList(t);
+        } else {
+          t.folderId = xhr.response.files[0].id;
+          getChildFolders(t,t.folderId);
+        }
+
+
+      };
+      xhr.send();
+
+    });
+}
+
+function getChildFolders(t,parent) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+    current_token = token;
+    var xhr = new XMLHttpRequest();
+    xhr.open('get', "https://www.googleapis.com/drive/v3/files?q='"+ parent + "' +in+parents");
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.responseType = 'json';
+    xhr.onload = () => {
+        if(xhr.response.files[0].name == "Docs") {
+          t.docsFolderId = xhr.response.files[0].id;
+          t.filesFolderId = xhr.response.files[1].id;
+        }
+        else {
+          t.docsFolderId = xhr.response.files[1].id;
+          t.filesFolderId = xhr.response.files[0].id;
+        }
+        getFilesList(t);
+        //console.log(t.docsFolderId,t.filesFolderId)
+    };
+    xhr.send();
+  });
+}
+
+function createFolder(t) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+    let metadata = {
+        'name': "ResearchAssistantFiles",
+        'mimeType': 'application/vnd.google-apps.folder'
+    };
+
+    let form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.responseType = 'json';
+    xhr.onload = () => {
+      t.folderId = xhr.response.id;
+      createSubFolders(t,"Files");
+      createSubFolders(t,"Docs");
+      //console.log(t.folderId,t.filesFolderId,t.docsFolderId);
+    };
+    xhr.send(form);
+
+  });
+}
+
+function createSubFolders(t,folderName) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+    let metadata = {
+        'name': folderName,
+        'mimeType': 'application/vnd.google-apps.folder',
+        'parents': [t.folderId]
+    };
+
+    let form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.responseType = 'json';
+    xhr.onload = () => {
+      if (folderName=="Files") t.filesFolderId = xhr.response.id;
+      else t.docsFolderId = xhr.response.id;
+
+    };
+    xhr.send(form);
+
+  });
+}
+
 function getFilesList(t) {
 
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
@@ -16,6 +151,7 @@ function getFilesList(t) {
       xhr.responseType = 'json';
       xhr.onload = () => {
           t.projects = xhr.response.files;
+          getAssociatedDocs(t);
       };
       xhr.send();
 
@@ -30,6 +166,35 @@ function getFilesList(t) {
 
     });
 
+}
+
+function getAssociatedDocs(t) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+    current_token = token;
+    var xhr = new XMLHttpRequest();
+    xhr.open('get', "https://www.googleapis.com/drive/v3/files?q='"+t.docsFolderId+"'+in+parents");
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.responseType = 'json';
+    xhr.onload = () => {
+      for (let i=0;i<xhr.response.files.length;i++) {
+        let found = t.projects.find(obj =>
+           obj.name == xhr.response.files[i].name
+        )
+        if (typeof(found) != "undefined") {
+          found.docId = xhr.response.files[i].id;
+          found.folderId = t.filesFolderId;
+        }
+      }
+
+      t.projects.forEach(p=> {
+        let a = p.id;
+        p.id = "МИША ПИДОР";
+        p.id = a;
+      } )
+
+    };
+    xhr.send();
+  });
 }
 
 function logOut() {
@@ -93,9 +258,34 @@ function createFile(t) {
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.responseType = 'json';
     xhr.onload = () => {
-      console.log(xhr.response);
-      getFilesList(t);
+      //console.log(xhr.response);
+      createDoc(t,document.getElementById('fileName').value);
       closeModal(t);
+    };
+    xhr.send(form);
+
+  });
+}
+
+function createDoc(t,docName) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+    let metadata = {
+        'name': docName, // Filename at Google Drive
+        'mimeType': 'application/vnd.google-apps.document', // mimeType at Google Drive
+        'parents': [t.docsFolderId], // Folder ID at Google Drive (remove it if want upload to root folder)
+    };
+
+    let form = new FormData();
+
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.responseType = 'json';
+    xhr.onload = () => {
+      //console.log(xhr.response);
+      getFilesList(t);
     };
     xhr.send(form);
 
@@ -104,38 +294,4 @@ function createFile(t) {
 
 function setModalWindowMark(t) {
   t.visible = true; t.deleteMark = false;
-}
-
-export default {
-  data () {
-    return {
-      projects: null,
-      profile: '',
-      visible: false,
-      selectedProject: null,
-      deleteMark: false,
-      fileName: ''
-    }
-  },
-  methods: {
-    LogOut: function() {
-      logOut();
-    },
-    CloseModal: function() { closeModal(this); },
-    DeleteFile: function() { deleteFile(this); },
-    SetModalWindowMark: function() { setModalWindowMark(this); },
-    CreateFile: function() { createFile(this); },
-    Rerender: function() { getFilesList(this); },
-  },
-  mounted: function() {
-    getFilesList(this);
-  },
-  beforeRouteLeave  (to, from, next) {
-    if (
-      event.target.tagName != "I" && event.target.tagName != "INPUT"
-      ||
-      event.target.tagName == "I" && event.target.className == "material-icons project__img"
-    ) next();
-
-  }
 }

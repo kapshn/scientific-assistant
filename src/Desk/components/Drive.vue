@@ -28,44 +28,23 @@
 export default {
   data () {
     return {
-      folderId: null,
       message: "Загрузка файлов...",
       driveFiles: null
     }
   },
+  props: ['folderId'],
   methods: {
     SelectDriveFile: function(file) {
       selectDriveFile(file,this)
     }
   },
   mounted: function() {
-    getAppFolder(this);
+    getDriveFiles(this);
   }
 }
 
 function selectDriveFile(file,t) {
   t.$emit('FileSelected',file);
-}
-
-function getAppFolder(t) {
-
-    chrome.identity.getAuthToken({ interactive: true }, function (token) {
-      var xhr = new XMLHttpRequest();
-      xhr.open('get', "https://www.googleapis.com/drive/v3/files?" + "q=name%20%3D%20'ResearchAssistantFiles'");
-      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-      xhr.responseType = 'json';
-      xhr.onload = () => {
-        if (xhr.response.files.length==1) {
-          t.folderId = xhr.response.files[0].id;
-          getDriveFiles(t);
-        } else {
-          t.message = 'Файлы еще не были созданы'
-        }
-
-      };
-      xhr.send();
-
-    });
 }
 
 function getDriveFiles(t) {
@@ -76,7 +55,6 @@ function getDriveFiles(t) {
     xhr.responseType = 'json';
     xhr.onload = () => {
       t.driveFiles = xhr.response.files;
-      console.log(xhr.response.files);
     };
     xhr.send();
 

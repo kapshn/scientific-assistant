@@ -18,7 +18,7 @@
         </div>
         <div class="toolbar__notes" id="noteToolbar"></div>
         <img class="toolbar__img" src="../images/script-text-outline.png" alt="script text icon">
-      </div> 
+      </div>
       <div id="graphContainer" style="overflow:hidden;cursor:default;">
       </div>
     </div>
@@ -34,6 +34,7 @@
 
     <ModalWindow
       v-if="uploadFileWindowVisibility"
+      v-bind:folderId="folderId"
       v-on:FileSelected="SelectFile($event)"
       v-on:CloseModalWindow="CloseModal()">
     </ModalWindow>

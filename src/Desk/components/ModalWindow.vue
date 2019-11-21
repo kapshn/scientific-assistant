@@ -6,7 +6,7 @@
       </div>
       <i class="material-icons files__close" v-on:click="$emit('CloseModalWindow');">close</i>
     </div>
-    <router-view v-on:FileSelected="SelectFile($event)"></router-view>
+    <router-view v-bind:folderId="folderId" v-on:FileSelected="SelectFile($event)"></router-view>
   </div>
 </template>
 
@@ -16,6 +16,7 @@ export default {
     return {
     }
   },
+  props: ['folderId'],
   methods: {
     SelectFile: function(file) {
       selectFile(file,this)

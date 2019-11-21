@@ -17,7 +17,7 @@ export default {
       uploadFileButtonVisibility: false,
     }
   },
-  props: ['id', 'name'],  
+  props: ['id', 'name', 'docId','folderId'],
   mounted: function() {
     fileId = this.id;
     context = this;
@@ -29,13 +29,14 @@ export default {
     SelectFile: function(file) {
       selectFile(file,this)
     }
+
   }
 }
 
 function selectFile(file,t) {
   if (tempCell != null && tempGraph != null)
   {
-    tempGraph.getModel().beginUpdate();        
+    tempGraph.getModel().beginUpdate();
     try
     {
       var edit = new mxCellAttributeChange(tempCell, 'document', file.id);
@@ -50,14 +51,14 @@ function selectFile(file,t) {
     }
 
     // Update cell size
-    tempGraph.getModel().beginUpdate();        
+    tempGraph.getModel().beginUpdate();
     try
     {
       let geo = tempGraph.model.getGeometry(tempCell);
       geo = geo.clone();
       geo.width = tempGraph.view.getState(tempCell).text.value.offsetWidth;
       geo.height = tempGraph.view.getState(tempCell).text.value.offsetHeight;
-      tempGraph.resizeCell(tempCell, geo);      
+      tempGraph.resizeCell(tempCell, geo);
     }
     finally
     {
@@ -74,7 +75,7 @@ function selectFile(file,t) {
 
 function closeModal(t) {
   t.editingWindowVisibility = false;
-  t.uploadFileWindowVisibility = false; 
+  t.uploadFileWindowVisibility = false;
   t.uploadFileButtonVisibility = false;
 }
 
@@ -127,7 +128,7 @@ function launchGraph(editor, graphContainer)
 {
   editor.graph = new mxGraph(graphContainer);
 
-  var graph = editor.graph; // for convenient use 
+  var graph = editor.graph; // for convenient use
 
   mxConnectionHandler.prototype.connectImage = new mxImage('../images/connector.gif', 16, 16); // Set connection image
   graph.setConnectable(true);
@@ -192,7 +193,7 @@ function launchGraph(editor, graphContainer)
   //   {
   //     var body = document.createElement('tbody');
   //     var table = document.createElement('table');
-      
+
   //     var attrs = cell.value.attributes;
   //     for (var i = 0; i < attrs.length; i++)
   //     {
@@ -204,7 +205,7 @@ function launchGraph(editor, graphContainer)
   //       mxUtils.write(td, attrs[i].value);
   //       tr.appendChild(td);
   //       body.appendChild(tr);
-  //     }    
+  //     }
   //     table.appendChild(body);
 
   //     return table;
@@ -218,7 +219,7 @@ function launchGraph(editor, graphContainer)
     {
       var body = document.createElement('tbody');
       var table = document.createElement('table');
-      
+
       table.style.padding = '20px';
       table.style.paddingBottom = '10px';
       table.style.paddingTop = '10px';
@@ -228,7 +229,7 @@ function launchGraph(editor, graphContainer)
       if (cell.getAttribute('type') == 'text') {
         var tr = document.createElement('tr');
         var td = document.createElement('td');
-         
+
         td.style.textAlign = 'left';
         td.style.fontSize = '14px';
 
@@ -302,7 +303,7 @@ function launchGraph(editor, graphContainer)
         td12.style.borderLeftStyle = 'height=\'30%\'';
 
 
-        mxUtils.write(td12, cell.getAttribute('citation', '')); 
+        mxUtils.write(td12, cell.getAttribute('citation', ''));
 
         tr1.appendChild(td11);
         tr1.appendChild(td12);
@@ -322,10 +323,10 @@ function launchGraph(editor, graphContainer)
         td22.onclick = function() {
           window.open('https://drive.google.com/open?id=' + cell.getAttribute('document', ''));
         };
-        
+
         tr2.appendChild(td21);
         tr2.appendChild(td22);
-        
+
         body.appendChild(tr1);
         body.appendChild(tr2);
       }
@@ -353,12 +354,12 @@ function launchToolbar(graph, noteToolbar)
   mxDragSource.prototype.getDropTarget = function(graph, x, y)
   {
     var cell = graph.getCellAt(x, y);
-    
+
     if (!graph.isValidDropTarget(cell))
     {
       cell = null;
     }
-    
+
     return cell;
   };
 
@@ -375,7 +376,7 @@ function addTextNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('type', 'text');
   note.setAttribute('text', '');
 
-  style = 'fillColor=#fef3b3;strokeColor=#d9d9d9;shadow=1;';  
+  style = 'fillColor=#fef3b3;strokeColor=#d9d9d9;shadow=1;';
 
   var vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
   vertex.setVertex(true);
@@ -445,7 +446,7 @@ function addToolbarItem(graph, toolbar, prototype, image)
     var vertex = graph.getModel().cloneCell(prototype);
     vertex.geometry.x = pt.x;
     vertex.geometry.y = pt.y;
-    
+
     graph.setSelectionCells(graph.importCells([vertex], 0, 0, cell));
   }
 
@@ -519,7 +520,7 @@ function selectionChanged(graph, cell)
     var form = new mxForm();
 
     var attrs = cell.value.attributes;
-    
+
     for (var i = 0; i < attrs.length; i++)
     {
       // Creates the textfield for the given property.
@@ -541,7 +542,7 @@ function selectionChanged(graph, cell)
 
 function createTextField(graph, form, cell, attribute)
 {
-  if (attribute.nodeName == 'document' || attribute.nodeName == 'type') 
+  if (attribute.nodeName == 'document' || attribute.nodeName == 'type')
   {
     return;
   } else if (attribute.nodeName == 'text' || attribute.nodeName == 'citation')
@@ -559,12 +560,12 @@ function createTextField(graph, form, cell, attribute)
 
     if (newValue != oldValue)
     {
-      graph.getModel().beginUpdate();        
+      graph.getModel().beginUpdate();
       try
       {
         var edit = new mxCellAttributeChange(cell, attribute.nodeName, newValue);
         graph.getModel().execute(edit);
-        //graph.updateCellSize(cell);        
+        //graph.updateCellSize(cell);
       }
       finally
       {
@@ -572,21 +573,21 @@ function createTextField(graph, form, cell, attribute)
       }
 
       // Update cell size
-      graph.getModel().beginUpdate();        
+      graph.getModel().beginUpdate();
       try
       {
         let geo = graph.model.getGeometry(cell);
         geo = geo.clone();
         geo.width = graph.view.getState(cell).text.value.offsetWidth;
         geo.height = graph.view.getState(cell).text.value.offsetHeight;
-        graph.resizeCell(cell, geo);      
+        graph.resizeCell(cell, geo);
       }
       finally
       {
         graph.getModel().endUpdate();
       }
     }
-  }; 
+  };
 
   mxEvent.addListener(input, 'keypress', function (evt)
   {
@@ -667,13 +668,13 @@ function launchSaveButton(graph)
       var encoder = new mxCodec();
       var result = encoder.encode(graph.getModel());
       var xml = mxUtils.getXml(result);
-  
+
       let file = new Blob([xml], { type: 'text/xml' });
-  
+
       let form = new FormData();
-  
+
       form.append('file', file);
-  
+
       let xhr = new XMLHttpRequest();
       xhr.open('PATCH', 'https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media');
       xhr.setRequestHeader('Authorization', 'Bearer ' + token);
@@ -681,9 +682,9 @@ function launchSaveButton(graph)
       xhr.responseType = 'json';
       xhr.onload = () => {
         //console.log(xhr.response);
-      };  
+      };
       xhr.send(file);
-  
+
       });
   });
 }

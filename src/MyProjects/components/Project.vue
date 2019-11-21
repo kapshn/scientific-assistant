@@ -1,5 +1,5 @@
 <template>
-  <router-link id="project" class="project" :to="{ name: 'desk', query: { id: project.id, name: project.name} }" @click.native="ConfirmRedirect($event)">
+  <router-link id="project" class="project" :to="{ name: 'desk', query: { id: project.id, name: project.name, docId: project.docId, folderId: project.folderId} }" @click.native="ConfirmRedirect($event)">
     <i class="material-icons project__img">folder</i>
     <div class="project__name" v-if="!editVisibility" >
       {{project.name}}
