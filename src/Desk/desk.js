@@ -1,8 +1,10 @@
 import Vue from 'vue';
 import App from './App';
-import ModalWindow from './components/ModalWindow.vue'
+import ModalWindow from './components/ModalWindow.vue';
+import TextIcon from 'vue-material-design-icons/ScriptTextOutline.vue';
 
 Vue.component('ModalWindow', ModalWindow);
+Vue.component('TextIcon', TextIcon);
 
 let context;
 let fileId;
@@ -15,7 +17,6 @@ export default {
       editingWindowVisibility: false,
       uploadFileWindowVisibility: false,
       uploadFileButtonVisibility: false,
-      a:1
     }
   },
   props: ['id', 'name', 'docId','folderId'],
@@ -30,8 +31,7 @@ export default {
     SelectFile: function(file) {
       selectFile(file,this)
     }
-
-  }
+  },
 }
 
 function selectFile(file,t) {

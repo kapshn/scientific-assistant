@@ -18,7 +18,8 @@
       <div class="toolbar__notes" id="noteToolbar"></div>
     </div>
     <div class='editor'>
-      <img id='showTextButton' class="editor__showTextButton" src="../images/script-text-outline.png" alt="script text icon">
+      <!--<img id='showTextButton' class="editor__showTextButton" src="../images/script-text-outline.png" alt="script text icon">-->
+      <TextIcon id='showTextButton' class="editor__showTextButton" :size="32" />
       <div id="graphContainer" style="overflow:hidden;cursor:default;"></div>       
     </div>
 
@@ -133,12 +134,11 @@ body{
 .editor{
   &__showTextButton{
     margin: 5px 0 0 5px;
-    height: 30px;
     position: fixed;
     z-index: 1000;
 
     &:hover{
-      background-color:red;
+      color: #808080;
     }
   }
 }
