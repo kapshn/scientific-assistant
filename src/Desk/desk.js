@@ -2,12 +2,19 @@ import Vue from 'vue';
 import App from './App';
 import ModalWindow from './components/ModalWindow.vue';
 import TextIcon from 'vue-material-design-icons/ScriptTextOutline.vue';
+import BoldIcon from 'vue-material-design-icons/FormatBold.vue';
+import ItalicIcon from 'vue-material-design-icons/FormatItalic.vue';
+import UnderlineIcon from 'vue-material-design-icons/FormatUnderline.vue';
 
 Vue.component('ModalWindow', ModalWindow);
 Vue.component('TextIcon', TextIcon);
+Vue.component('BoldIcon', BoldIcon);
+Vue.component('ItalicIcon', ItalicIcon);
+Vue.component('UnderlineIcon', UnderlineIcon);
 
 let context;
 let fileId;
+let docId;
 let tempCell = null;
 let tempGraph = null;
 
@@ -22,6 +29,7 @@ export default {
   props: ['id', 'name', 'docId','folderId'],
   mounted: function() {
     fileId = this.id;
+    docId = this.docId;
     context = this;
     getXML(this);
   },
@@ -127,6 +135,8 @@ function launchEditor(xmlBody)
     launchSaveButton(editor.graph);
 
     launchShowTextButton();
+
+    launchFontToolbar(editor.graph);
   }
 }
 
@@ -177,46 +187,6 @@ function launchGraph(editor, graphContainer)
 
   // Overrides method to drawing notes using HTML
   graph.setHtmlLabels(true);
-
-  // // Fix for wrong preferred size
-  // var oldGetPreferredSizeForCell = graph.getPreferredSizeForCell;
-  // graph.getPreferredSizeForCell = function(cell)
-  // {
-  //   var result = oldGetPreferredSizeForCell.apply(this, arguments);
-
-  //   if (result != null)
-  //   {
-  //     result.width = Math.max(200, result.width - 40);
-  //   }
-  //   console.log(result);
-
-  //   return result;
-  // };
-
-  // graph.getLabel = function(cell)
-  // {
-  //   if(cell.isVertex())
-  //   {
-  //     var body = document.createElement('tbody');
-  //     var table = document.createElement('table');
-
-  //     var attrs = cell.value.attributes;
-  //     for (var i = 0; i < attrs.length; i++)
-  //     {
-  //       var tr = document.createElement('tr');
-  //       var td = document.createElement('td');
-  //       td.style.textAlign = 'center';
-  //       td.style.fontSize = '12px';
-  //       td.style.color = '#774400';
-  //       mxUtils.write(td, attrs[i].value);
-  //       tr.appendChild(td);
-  //       body.appendChild(tr);
-  //     }
-  //     table.appendChild(body);
-
-  //     return table;
-  //   }
-  // };
 
   graph.getLabel = function(cell)
   {
@@ -707,24 +677,115 @@ function launchShowTextButton()
     let headerHeight = document.getElementsByClassName('header')[0].offsetHeight;
     let tempHeight = window.innerHeight - headerHeight;
 
-    if (googleDocIframe.style.display == 'block')
+    if (googleDocIframe)
     {
-      googleDocIframe.style.display = 'none';
-      graphContainer.style.display = 'block';
-      toolbar.style.display = 'flex';
+      if (googleDocIframe.style.display == 'block')
+      {
+        googleDocIframe.style.display = 'none';
+        graphContainer.style.display = 'block';
+        toolbar.style.display = 'flex';
+      }
+      else
+      {
+        googleDocIframe.style.display = 'block';
+        graphContainer.style.display = 'none';
+        toolbar.style.display = 'none';
+      }
     }
     else
     {
+      googleDocIframe = document.createElement("iframe");
+      let src = 'https://docs.google.com/document/d/' + docId + '/edit';
+      googleDocIframe.setAttribute("src", src);
+      googleDocIframe.id = 'googleDocIframe';
+      googleDocIframe.style.width = "100%";
       googleDocIframe.style.display = 'block';
       googleDocIframe.style.height = tempHeight.toString() + 'px';
+
+      document.getElementById('app').appendChild(googleDocIframe);
+
       graphContainer.style.display = 'none';
       toolbar.style.display = 'none';
     }
   });
 }
 
-function test()
+function launchFontToolbar(graph)
 {
-  //console.log(editor.keyHandler.handler);
-  //editor.keyHandler.destroy();
+  let boldButton = document.getElementById('boldButton');
+  let italicButton = document.getElementById('italicButton');
+  let underlineButton = document.getElementById('underlineButton');
+
+  // mxConstants.FONT_BOLD = 1
+  // mxConstants.FONT_ITALIC = 2
+  // mxConstants.FONT_UNDERLINE = 4
+
+  boldButton.addEventListener('click', function(){
+    // All cells
+    //let cells = graph.getChildVertices(graph.getDefaultParent());
+
+    let selectedCell = graph.getSelectionCell();
+    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
+
+    if((curFontStyle == 1) || (curFontStyle == 3) || (curFontStyle == 5) || (curFontStyle == 7))
+    {
+      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_BOLD);
+    }
+    else
+    {
+      if (curFontStyle)
+      {
+        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_BOLD); // 1
+      }
+      else
+      {
+        graph.setCellStyles('fontStyle', mxConstants.FONT_BOLD); // 1
+      }
+    }
+    graph.refresh();
+  });
+
+  italicButton.addEventListener('click', function(){
+    let selectedCell = graph.getSelectionCell();
+    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
+
+    if((curFontStyle == 2) || (curFontStyle == 3) || (curFontStyle == 6) || (curFontStyle == 7))
+    {
+      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_ITALIC);
+    }
+    else
+    {
+      if (curFontStyle)
+      {
+        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_ITALIC); // 2
+      }
+      else
+      {
+        graph.setCellStyles('fontStyle', mxConstants.FONT_ITALIC); // 2
+      }
+    }
+    graph.refresh();
+  });
+
+  underlineButton.addEventListener('click', function(){
+    let selectedCell = graph.getSelectionCell();
+    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
+
+    if((curFontStyle == 4) || (curFontStyle == 5) || (curFontStyle == 6) || (curFontStyle == 7))
+    {
+      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_UNDERLINE);
+    }
+    else
+    {
+      if (curFontStyle)
+      {
+        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_UNDERLINE); // 4
+      }
+      else
+      {
+        graph.setCellStyles('fontStyle', mxConstants.FONT_UNDERLINE); // 4
+      }
+    }
+    graph.refresh();
+  });
 }

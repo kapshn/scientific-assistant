@@ -16,6 +16,14 @@
         <button id="redoButton"></button>
       </div>
       <div class="toolbar__notes" id="noteToolbar"></div>
+      <div class="toolbar__font" id="fontToolbar">
+        <!--<button id="boldButton"></button>-->
+        <BoldIcon id="boldButton"/>
+        <ItalicIcon id="italicButton"/>
+        <!--<button id="italicButton"></button>-->
+        <!--<button id="underlineButton"></button>-->
+        <UnderlineIcon id="underlineButton"/>
+      </div>
     </div>
     <div class='editor'>
       <!--<img id='showTextButton' class="editor__showTextButton" src="../images/script-text-outline.png" alt="script text icon">-->
@@ -23,7 +31,7 @@
       <div id="graphContainer" style="overflow:hidden;cursor:default;"></div>       
     </div>
 
-    <iframe id='googleDocIframe' :src="'https://docs.google.com/document/d/' + docId + '/edit'"></iframe>
+    <!--<iframe id='googleDocIframe' :src="'https://docs.google.com/document/d/' + docId + '/edit'"></iframe>-->
 
     <div class="modal" v-if="editingWindowVisibility">
       <div class="modal__mask" @click="CloseModal()"></div>
@@ -106,22 +114,19 @@ body{
   border-top: solid rgb(198,198,198) 2px;
   border-bottom: solid rgb(198,198,198) 2px;
   display:flex;
-  flex-direction: row;
-  align-items: center;
 
   &__special{
-    height: 35px;
     padding: 2px 15px 2px 15px;
-    display:flex;
-    flex-direction: row;
-    align-items: center;
     border-right: solid rgb(198,198,198) 2px;
   }
 
   &__notes{
-    // height: 39px;
     padding: 0 5px 0 5px;
-    display: inline-block;
+    border-right: solid rgb(198,198,198) 2px;
+  }
+
+  &__font{
+    padding: 0 5px 0 5px;
     border-right: solid rgb(198,198,198) 2px;
   }
 
@@ -143,8 +148,7 @@ body{
   }
 }
 
-#saveButton
-{
+#saveButton{
   height: 30px;
   width: 30px;
   background: url('../images/outline_save_black_24dp.png') no-repeat;
@@ -153,8 +157,7 @@ body{
   margin-right: 10px;
 }
 
-#undoButton
-{
+#undoButton{
   height: 30px;
   width: 30px;
   background: url('../images/outline_undo_black_24dp.png') no-repeat;
@@ -162,8 +165,7 @@ body{
   border: 0;
 }
 
-#redoButton
-{
+#redoButton{
   height: 30px;
   width: 30px;
   background: url('../images/outline_redo_black_24dp.png') no-repeat;
@@ -221,10 +223,10 @@ body{
   cursor: pointer;
 }
 
-#googleDocIframe{
-  width: 100%;
-  //height: 600px;
-  //display:none;
-}
+// #googleDocIframe{
+//   width: 100%;
+//   //display: none;
+//   //visibility: hidden;
+// }
 
 </style>
