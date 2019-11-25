@@ -1,13 +1,22 @@
 import Vue from 'vue';
 import App from './App';
-import ModalWindow from './components/ModalWindow.vue'
+import ModalWindow from './components/ModalWindow.vue';
+import TextIcon from 'vue-material-design-icons/ScriptTextOutline.vue';
+import BoldIcon from 'vue-material-design-icons/FormatBold.vue';
+import ItalicIcon from 'vue-material-design-icons/FormatItalic.vue';
+import UnderlineIcon from 'vue-material-design-icons/FormatUnderline.vue';
 
 Vue.component('ModalWindow', ModalWindow);
+Vue.component('TextIcon', TextIcon);
+Vue.component('BoldIcon', BoldIcon);
+Vue.component('ItalicIcon', ItalicIcon);
+Vue.component('UnderlineIcon', UnderlineIcon);
 
-var context;
-var fileId;
-var tempCell = null;
-var tempGraph = null;
+let context;
+let fileId;
+let docId;
+let tempCell = null;
+let tempGraph = null;
 
 export default {
   data () {
@@ -20,7 +29,9 @@ export default {
   props: ['id', 'name', 'docId','folderId'],
   mounted: function() {
     fileId = this.id;
+    docId = this.docId;
     context = this;
+    calcMargins();
     getXML(this);
   },
   methods: {
@@ -29,8 +40,14 @@ export default {
     SelectFile: function(file) {
       selectFile(file,this)
     }
+  },
+}
 
-  }
+function calcMargins() {
+  let header = document.getElementsByClassName('header')[0];
+  let toolbar = document.getElementById('toolbar');
+  let editor = document.getElementsByClassName('editor')[0];
+  editor.style.marginTop = header.offsetHeight + toolbar.offsetHeight + 'px';
 }
 
 function selectFile(file,t) {
@@ -39,8 +56,8 @@ function selectFile(file,t) {
     tempGraph.getModel().beginUpdate();
     try
     {
-      var edit = new mxCellAttributeChange(tempCell, 'document', file.id);
-      var edit2 = new mxCellAttributeChange(tempCell, 'name', file.name);
+      let edit = new mxCellAttributeChange(tempCell, 'document', file.id);
+      let edit2 = new mxCellAttributeChange(tempCell, 'name', file.name);
       tempGraph.getModel().execute(edit);
       tempGraph.getModel().execute(edit2);
       //tempGraph.updateCellSize(tempCell);
@@ -88,7 +105,7 @@ function getXML(t) {
 
       let xmlBody;
 
-      var xhr = new XMLHttpRequest();
+      let xhr = new XMLHttpRequest();
       xhr.open('get', 'https://www.googleapis.com/drive/v3/files/'+ fileId + '?alt=media');
       xhr.setRequestHeader('Authorization', 'Bearer ' + token);
       xhr.onload = () => {
@@ -109,11 +126,14 @@ function launchEditor(xmlBody)
   }
   else
   {
-    var editor = new mxEditor();
+    // Remove old listeners for keybinds if needed
+    mxEvent.removeAllListeners(document.documentElement);
+
+    let editor = new mxEditor();
     launchGraph(editor, document.getElementById('graphContainer'));
 
-    var doc = mxUtils.parseXml(xmlBody);
-    var codec = new mxCodec(doc);
+    let doc = mxUtils.parseXml(xmlBody);
+    let codec = new mxCodec(doc);
     codec.decode(doc.documentElement, editor.graph.getModel());
 
     launchUndoManager(editor);
@@ -121,6 +141,10 @@ function launchEditor(xmlBody)
     launchKeyHandler(editor);
 
     launchSaveButton(editor.graph);
+
+    launchShowTextButton();
+
+    launchFontToolbar(editor.graph);
   }
 }
 
@@ -128,7 +152,7 @@ function launchGraph(editor, graphContainer)
 {
   editor.graph = new mxGraph(graphContainer);
 
-  var graph = editor.graph; // for convenient use
+  let graph = editor.graph; // for convenient use
 
   mxConnectionHandler.prototype.connectImage = new mxImage('../images/connector.gif', 16, 16); // Set connection image
   graph.setConnectable(true);
@@ -160,7 +184,7 @@ function launchGraph(editor, graphContainer)
   };
 
   // Set style to edges
-  var style = graph.getStylesheet().getDefaultEdgeStyle();
+  let style = graph.getStylesheet().getDefaultEdgeStyle();
   style[mxConstants.STYLE_ENDARROW] = mxConstants.NONE;
 
   // Makes the shadow styles
@@ -172,53 +196,12 @@ function launchGraph(editor, graphContainer)
   // Overrides method to drawing notes using HTML
   graph.setHtmlLabels(true);
 
-  // // Fix for wrong preferred size
-  // var oldGetPreferredSizeForCell = graph.getPreferredSizeForCell;
-  // graph.getPreferredSizeForCell = function(cell)
-  // {
-  //   var result = oldGetPreferredSizeForCell.apply(this, arguments);
-
-  //   if (result != null)
-  //   {
-  //     result.width = Math.max(200, result.width - 40);
-  //   }
-  //   console.log(result);
-
-  //   return result;
-  // };
-
-  // graph.getLabel = function(cell)
-  // {
-  //   if(cell.isVertex())
-  //   {
-  //     var body = document.createElement('tbody');
-  //     var table = document.createElement('table');
-
-  //     var attrs = cell.value.attributes;
-  //     for (var i = 0; i < attrs.length; i++)
-  //     {
-  //       var tr = document.createElement('tr');
-  //       var td = document.createElement('td');
-  //       td.style.textAlign = 'center';
-  //       td.style.fontSize = '12px';
-  //       td.style.color = '#774400';
-  //       mxUtils.write(td, attrs[i].value);
-  //       tr.appendChild(td);
-  //       body.appendChild(tr);
-  //     }
-  //     table.appendChild(body);
-
-  //     return table;
-  //   }
-  // };
-
-  //here
   graph.getLabel = function(cell)
   {
     if(cell.isVertex())
     {
-      var body = document.createElement('tbody');
-      var table = document.createElement('table');
+      let body = document.createElement('tbody');
+      let table = document.createElement('table');
 
       table.style.padding = '20px';
       table.style.paddingBottom = '10px';
@@ -227,8 +210,8 @@ function launchGraph(editor, graphContainer)
 
       //РІРµСЂСЃС‚РєР° С‚РµРєСЃС‚РѕРІРѕР№ Р·Р°РјРµС‚РєРё
       if (cell.getAttribute('type') == 'text') {
-        var tr = document.createElement('tr');
-        var td = document.createElement('td');
+        let tr = document.createElement('tr');
+        let td = document.createElement('td');
 
         td.style.textAlign = 'left';
         td.style.fontSize = '14px';
@@ -240,15 +223,15 @@ function launchGraph(editor, graphContainer)
 
       //РІРµСЂСЃС‚РєР° СЃСЃС‹Р»РєРё
       if (cell.getAttribute('type') == 'link') {
-        var tr = document.createElement('tr');
+        let tr = document.createElement('tr');
 
-        var td1 = document.createElement('td');
-        var td2 = document.createElement('td');
-        var img = document.createElement('img');
+        let td1 = document.createElement('td');
+        let td2 = document.createElement('td');
+        let img = document.createElement('img');
         img.src = '../images/link-variant.png';
         td1.appendChild(img);
 
-        var td2 = document.createElement('td');
+        //var td2 = document.createElement('td');
         td2.style.textAlign = 'center';
         td2.style.fontSize = '14px';
 
@@ -264,14 +247,14 @@ function launchGraph(editor, graphContainer)
 
       //РІРµСЂСЃС‚РєР° РґРѕРєСѓРјРµРЅС‚Р°
       if (cell.getAttribute('type') == 'document') {
-        var tr = document.createElement('tr');
+        let tr = document.createElement('tr');
 
-        var td1 = document.createElement('td');
-        var img = document.createElement('img');
+        let td1 = document.createElement('td');
+        let img = document.createElement('img');
         img.src = '../images/file-document-outline.png';
         td1.appendChild(img);
 
-        var td2 = document.createElement('td');
+        let td2 = document.createElement('td');
         td2.style.textAlign = 'top';
         td2.style.fontSize = '14px';
 
@@ -287,15 +270,15 @@ function launchGraph(editor, graphContainer)
 
       //РІРµСЂСЃС‚РєР° С†РёС‚Р°С‚С‹
       if (cell.getAttribute('type') == 'citation') {
-        var tr1 = document.createElement('tr');
+        let tr1 = document.createElement('tr');
 
-        var td11 = document.createElement('td');
+        let td11 = document.createElement('td');
         td11.style.paddingRight = '5px';
-        var img1 = document.createElement('img');
+        let img1 = document.createElement('img');
         img1.src = '../images/format-quote-close.png';
         td11.appendChild(img1);
 
-        var td12 = document.createElement('td');
+        let td12 = document.createElement('td');
         td12.style.textAlign = 'top';
         td12.style.fontSize = '14px';
         td12.style.paddingLeft = '5px';
@@ -308,14 +291,14 @@ function launchGraph(editor, graphContainer)
         tr1.appendChild(td11);
         tr1.appendChild(td12);
 
-        var tr2 = document.createElement('tr');
+        let tr2 = document.createElement('tr');
 
-        var td21 = document.createElement('td');
-        var img2 = document.createElement('img');
+        let td21 = document.createElement('td');
+        let img2 = document.createElement('img');
         img2.src = '../images/file-document-outline.png';
         td21.appendChild(img2);
 
-        var td22 = document.createElement('td');
+        let td22 = document.createElement('td');
         td22.style.textAlign = 'top';
         td22.style.fontSize = '14px';
 
@@ -336,7 +319,6 @@ function launchGraph(editor, graphContainer)
       return table;
     }
   };
-  //here
 
   launchToolbar(graph, document.getElementById("noteToolbar"));
 
@@ -345,7 +327,7 @@ function launchGraph(editor, graphContainer)
 
 function launchToolbar(graph, noteToolbar)
 {
-  var toolbar = new mxToolbar(noteToolbar);
+  let toolbar = new mxToolbar(noteToolbar);
   toolbar.enabled = false;
 
   graph.dropEnabled = true;
@@ -353,7 +335,7 @@ function launchToolbar(graph, noteToolbar)
   // Matches DnD inside the graph
   mxDragSource.prototype.getDropTarget = function(graph, x, y)
   {
-    var cell = graph.getCellAt(x, y);
+    let cell = graph.getCellAt(x, y);
 
     if (!graph.isValidDropTarget(cell))
     {
@@ -371,14 +353,14 @@ function launchToolbar(graph, noteToolbar)
 
 function addTextNote(graph, toolbar, icon, w, h, style)
 {
-  var doc = mxUtils.createXmlDocument();
-  var note = doc.createElement('Note');
+  let doc = mxUtils.createXmlDocument();
+  let note = doc.createElement('Note');
   note.setAttribute('type', 'text');
   note.setAttribute('text', '');
 
   style = 'fillColor=#fef3b3;strokeColor=#d9d9d9;shadow=1;';
 
-  var vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
+  let vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
   vertex.setVertex(true);
 
   addToolbarItem(graph, toolbar, vertex, icon);
@@ -386,15 +368,15 @@ function addTextNote(graph, toolbar, icon, w, h, style)
 
 function addLinkNote(graph, toolbar, icon, w, h, style)
 {
-  var doc = mxUtils.createXmlDocument();
-  var note = doc.createElement('Note');
+  let doc = mxUtils.createXmlDocument();
+  let note = doc.createElement('Note');
   note.setAttribute('type', 'link');
   note.setAttribute('link', '');
   note.setAttribute('name', '');
 
   style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;';
 
-  var vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
+  let vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
   vertex.setVertex(true);
 
   addToolbarItem(graph, toolbar, vertex, icon);
@@ -402,15 +384,15 @@ function addLinkNote(graph, toolbar, icon, w, h, style)
 
 function addDocumentNote(graph, toolbar, icon, w, h, style)
 {
-  var doc = mxUtils.createXmlDocument();
-  var note = doc.createElement('Note');
+  let doc = mxUtils.createXmlDocument();
+  let note = doc.createElement('Note');
   note.setAttribute('type', 'document');
   note.setAttribute('document', '');
   note.setAttribute('name', '');
 
   style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;';
 
-  var vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
+  let vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
   vertex.setVertex(true);
 
   addToolbarItem(graph, toolbar, vertex, icon);
@@ -418,8 +400,8 @@ function addDocumentNote(graph, toolbar, icon, w, h, style)
 
 function addCitationNote(graph, toolbar, icon, w, h, style)
 {
-  var doc = mxUtils.createXmlDocument();
-  var note = doc.createElement('Note');
+  let doc = mxUtils.createXmlDocument();
+  let note = doc.createElement('Note');
   note.setAttribute('type', 'citation');
   note.setAttribute('document', '');
   note.setAttribute('name', '');
@@ -427,7 +409,7 @@ function addCitationNote(graph, toolbar, icon, w, h, style)
 
   style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;';
 
-  var vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
+  let vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
   vertex.setVertex(true);
 
   addToolbarItem(graph, toolbar, vertex, icon);
@@ -438,12 +420,12 @@ function addToolbarItem(graph, toolbar, prototype, image)
   // Function that is executed when the image is dropped on
   // the graph. The cell argument points to the cell under
   // the mousepointer if there is one.
-  var funct = function(graph, evt, cell)
+  let funct = function(graph, evt, cell)
   {
     graph.stopEditing(false);
 
-    var pt = graph.getPointForEvent(evt);
-    var vertex = graph.getModel().cloneCell(prototype);
+    let pt = graph.getPointForEvent(evt);
+    let vertex = graph.getModel().cloneCell(prototype);
     vertex.geometry.x = pt.x;
     vertex.geometry.y = pt.y;
 
@@ -451,11 +433,11 @@ function addToolbarItem(graph, toolbar, prototype, image)
   }
 
   // Creates the image which is used as the drag icon (preview)
-  var img = toolbar.addMode(null, image, funct);
+  let img = toolbar.addMode(null, image, funct);
   mxUtils.makeDraggable(img, graph, funct);
 
   // Customize images for notes in toolbar
-  var x = document.getElementsByClassName("mxToolbarMode");
+  let x = document.getElementsByClassName("mxToolbarMode");
   for (let i = 0; i < x.length; i++) {
     x[i].style.width = '30px';
     x[i].style.height = '30px';
@@ -475,7 +457,7 @@ function launchPropertiesPanel(graph)
   // Open properties panel on doubleclick
   graph.addListener(mxEvent.DOUBLE_CLICK, function (sender, evt) {
 
-    var cell = evt.getProperty("cell"); // cell may be null
+    let cell = evt.getProperty("cell"); // cell may be null
     if (cell != null) {
 
       graph.setSelectionCell(cell);
@@ -496,7 +478,7 @@ function launchPropertiesPanel(graph)
 
 function selectionChanged(graph, cell)
 {
-  var div = document.getElementById('properties');
+  let div = document.getElementById('properties');
 
   // Forces focusout in IE
   graph.container.focus();
@@ -517,11 +499,11 @@ function selectionChanged(graph, cell)
     // mxUtils.br(div);
 
     // Creates the form from the attributes of the user object
-    var form = new mxForm();
+    let form = new mxForm();
 
-    var attrs = cell.value.attributes;
+    let attrs = cell.value.attributes;
 
-    for (var i = 0; i < attrs.length; i++)
+    for (let i = 0; i < attrs.length; i++)
     {
       // Creates the textfield for the given property.
       createTextField(graph, form, cell, attrs[i]);
@@ -542,28 +524,29 @@ function selectionChanged(graph, cell)
 
 function createTextField(graph, form, cell, attribute)
 {
+  let input;
   if (attribute.nodeName == 'document' || attribute.nodeName == 'type')
   {
     return;
   } else if (attribute.nodeName == 'text' || attribute.nodeName == 'citation')
   {
-    var input = form.addTextarea(translateFieldName(attribute.nodeName) + ':', attribute.nodeValue);
+    input = form.addTextarea(translateFieldName(attribute.nodeName) + ':', attribute.nodeValue);
   } else
   {
-    var input = form.addText(translateFieldName(attribute.nodeName) + ':', attribute.nodeValue);
+    input = form.addText(translateFieldName(attribute.nodeName) + ':', attribute.nodeValue);
   }
 
-  var applyHandler = function()
+  let applyHandler = function()
   {
-    var newValue = input.value || '';
-    var oldValue = cell.getAttribute(attribute.nodeName, '');
+    let newValue = input.value || '';
+    let oldValue = cell.getAttribute(attribute.nodeName, '');
 
     if (newValue != oldValue)
     {
       graph.getModel().beginUpdate();
       try
       {
-        var edit = new mxCellAttributeChange(cell, attribute.nodeName, newValue);
+        let edit = new mxCellAttributeChange(cell, attribute.nodeName, newValue);
         graph.getModel().execute(edit);
         //graph.updateCellSize(cell);
       }
@@ -642,6 +625,7 @@ function launchUndoManager(editor)
 
   let undoButton = document.getElementById('undoButton');
   undoButton.addEventListener('click', function () {
+    console.log(temp === editor)
     editor.undo();
   });
 
@@ -653,7 +637,7 @@ function launchUndoManager(editor)
 
 function launchKeyHandler(editor)
 {
-  var keyHandler = new mxDefaultKeyHandler(editor);
+  let keyHandler = new mxDefaultKeyHandler(editor);
   keyHandler.bindAction(46, 'delete');
   keyHandler.bindAction(90, 'undo', true);
   keyHandler.bindAction(89, 'redo', true);
@@ -661,13 +645,13 @@ function launchKeyHandler(editor)
 
 function launchSaveButton(graph)
 {
-  var saveButton = document.getElementById('saveButton');
+  let saveButton = document.getElementById('saveButton');
   saveButton.addEventListener('click', function () {
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
 
-      var encoder = new mxCodec();
-      var result = encoder.encode(graph.getModel());
-      var xml = mxUtils.getXml(result);
+      let encoder = new mxCodec();
+      let result = encoder.encode(graph.getModel());
+      let xml = mxUtils.getXml(result);
 
       let file = new Blob([xml], { type: 'text/xml' });
 
@@ -686,5 +670,132 @@ function launchSaveButton(graph)
       xhr.send(file);
 
       });
+  });
+}
+
+function launchShowTextButton()
+{
+  let showTextButton = document.getElementById('showTextButton');
+  showTextButton.addEventListener('click', function () {
+
+    let googleDocIframe = document.getElementById('googleDocIframe');
+    let editorContainer = document.getElementsByClassName('editor')[0];
+    let toolbar = document.getElementById('toolbar');
+
+    let headerHeight = document.getElementsByClassName('header')[0].offsetHeight;
+    let tempHeight = window.innerHeight - headerHeight;
+
+    if (googleDocIframe)
+    {
+      if (googleDocIframe.style.display == 'block')
+      {
+        googleDocIframe.style.display = 'none';
+        editorContainer.style.display = 'block';
+        toolbar.style.display = 'flex';
+
+      }
+      else
+      {
+        googleDocIframe.style.display = 'block';
+        editorContainer.style.display = 'none';
+        toolbar.style.display = 'none';
+      }
+    }
+    else
+    {
+      googleDocIframe = document.createElement("iframe");
+      let src = 'https://docs.google.com/document/d/' + docId + '/edit';
+      googleDocIframe.setAttribute("src", src);
+      googleDocIframe.id = 'googleDocIframe';
+      googleDocIframe.style.width = "100%";
+      googleDocIframe.style.display = 'block';
+      googleDocIframe.style.marginTop = headerHeight + 'px';
+      googleDocIframe.style.height = tempHeight.toString() + 'px';
+
+      document.getElementById('app').appendChild(googleDocIframe);
+
+      editorContainer.style.display = 'none';
+      toolbar.style.display = 'none';
+    }
+  });
+}
+
+function launchFontToolbar(graph)
+{
+  let boldButton = document.getElementById('boldButton');
+  let italicButton = document.getElementById('italicButton');
+  let underlineButton = document.getElementById('underlineButton');
+
+  // mxConstants.FONT_BOLD = 1
+  // mxConstants.FONT_ITALIC = 2
+  // mxConstants.FONT_UNDERLINE = 4
+
+  boldButton.addEventListener('click', function(){
+    // All cells
+    //let cells = graph.getChildVertices(graph.getDefaultParent());
+
+    let selectedCell = graph.getSelectionCell();
+    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
+
+    if((curFontStyle == 1) || (curFontStyle == 3) || (curFontStyle == 5) || (curFontStyle == 7))
+    {
+      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_BOLD);
+    }
+    else
+    {
+      if (curFontStyle)
+      {
+        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_BOLD); // 1
+      }
+      else
+      {
+        graph.setCellStyles('fontStyle', mxConstants.FONT_BOLD); // 1
+      }
+    }
+    graph.refresh();
+  });
+
+  italicButton.addEventListener('click', function(){
+    let selectedCell = graph.getSelectionCell();
+    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
+
+    if((curFontStyle == 2) || (curFontStyle == 3) || (curFontStyle == 6) || (curFontStyle == 7))
+    {
+      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_ITALIC);
+    }
+    else
+    {
+      if (curFontStyle)
+      {
+        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_ITALIC); // 2
+      }
+      else
+      {
+        graph.setCellStyles('fontStyle', mxConstants.FONT_ITALIC); // 2
+      }
+    }
+    graph.refresh();
+  });
+
+  underlineButton.addEventListener('click', function(){
+    let selectedCell = graph.getSelectionCell();
+    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
+
+    if((curFontStyle == 4) || (curFontStyle == 5) || (curFontStyle == 6) || (curFontStyle == 7))
+    {
+      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_UNDERLINE);
+    }
+    else
+    {
+      if (curFontStyle)
+      {
+        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_UNDERLINE); // 4
+      }
+      else
+      {
+        graph.setCellStyles('fontStyle', mxConstants.FONT_UNDERLINE); // 4
+      }
+    }
+    graph.refresh();
   });
 }

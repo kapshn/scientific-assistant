@@ -150,8 +150,18 @@ function getFilesList(t) {
       xhr.setRequestHeader('Authorization', 'Bearer ' + token);
       xhr.responseType = 'json';
       xhr.onload = () => {
-          t.projects = xhr.response.files;
-          getAssociatedDocs(t);
+        t.projects = xhr.response.files.map(f =>
+          {
+            let a = {
+              id: f.id,
+              name: f.name,
+              folderId: "",
+              docId: ""
+            }
+            return a
+          }
+        )
+        getAssociatedDocs(t);
       };
       xhr.send();
 
@@ -185,12 +195,6 @@ function getAssociatedDocs(t) {
           found.folderId = t.filesFolderId;
         }
       }
-
-      t.projects.forEach(p=> {
-        let a = p.id;
-        p.id = "МИША ПИДОР";
-        p.id = a;
-      } )
 
     };
     xhr.send();
@@ -232,8 +236,11 @@ function deleteFile(t) {
 }
 
 function createFile(t) {
-  if (document.getElementById('fileName').value == '') {
-    alert("Введите название файла!");
+  let found = t.projects.find(obj =>
+    obj.name == document.getElementById('fileName').value
+  )
+  if (typeof(found) != "undefined") {
+    alert("Файл с таким названием уже существует!");
   } else
   chrome.identity.getAuthToken({ interactive: true }, function (token) {
     current_token = token;
