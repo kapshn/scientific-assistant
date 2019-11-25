@@ -2,27 +2,48 @@
   <div id="app">
     <header class="header">
       <img class="header__img" src="../images/logo.png" alt="research assistant logo">
-      <img class="header__folderIcon" src="../images/folder-open.png" alt="folder icon">
-      <h1 class="header__title">{{name}}</h1>
-      <router-link class="header-exit" :to="{ name: 'myprojects' }">
-        <i class="material-icons header-exit__icon">exit_to_app</i>
+      <router-link :to="{ name: 'myprojects' }">
+        <FolderOpenIcon class="header__folder-icon icon-42"/>
       </router-link>
+      <h1 class="header__title">{{name}}</h1>
     </header>
-
     <div class='toolbar' id="toolbar">
       <div class="toolbar__special">
-        <button id="saveButton"></button>
-        <button id="undoButton"></button>
-        <button id="redoButton"></button>
+        <!--<button id="saveButton"></button>-->
+        <SaveIcon class="icon-30" id="saveButton"/>
+        <!--<button id="undoButton"></button>-->
+        <UndoIcon class="icon-30" id="undoButton"/>
+        <!--<button id="redoButton"></button>-->
+        <RedoIcon class="icon-30" id="redoButton"/>
       </div>
       <div class="toolbar__notes" id="noteToolbar"></div>
+      <div class="toolbar__font" id="fontToolbar">
+        <BoldIcon id="boldButton"/>
+        <ItalicIcon id="italicButton"/>
+        <UnderlineIcon id="underlineButton"/>
+        <select id="fontSizeSelect">
+          <option value="8">8</option>
+          <option value="10">10</option>
+          <option value="12">12</option>
+          <option value="14">14</option>
+          <option value="16">16</option>
+          <option value="18">18</option>
+        </select>
+
+        <select id="fontFamilySelect">
+          <option value="Arial">Arial</option>
+          <option value="Dialog">Dialog</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Courier">Courier</option>
+        </select>
+
+      </div>
     </div>
     <div class='editor'>
-      <img id='showTextButton' class="editor__showTextButton" src="../images/script-text-outline.png" alt="script text icon">
       <div id="graphContainer" style="overflow:hidden;cursor:default;"></div>       
     </div>
-
-    <iframe id='googleDocIframe' :src="'https://docs.google.com/document/d/' + docId + '/edit'"></iframe>
+    <TextIcon id='showTextButton' :size="32" />
 
     <div class="modal" v-if="editingWindowVisibility">
       <div class="modal__mask" @click="CloseModal()"></div>
@@ -45,15 +66,25 @@
 <script src="./desk.js"></script>
 
 <style lang="scss" scoped>
-p {
-  font-size: 20px;
-}
 
-body{
-  margin: 100px;
+#showTextButton {
+  bottom: 15px;
+  left: 15px;
+  position: fixed;
+  z-index: 100;
+  cursor: pointer;
+
+  &:hover{
+    color: #808080;
+  }
 }
 
 .header {
+  z-index: 100;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -80,95 +111,72 @@ body{
     margin-left: 30px;
   }
 
-  &-exit {
-    align-self: flex-end;
-    margin: 0 5px 10px auto;
-    cursor: pointer;
-
-    &:hover {
-      .header-exit__icon {
-        color: #0c73b8;
-      }
-    }
-
-    &__icon {
-      transform: scaleY(1.5);
-      font-size: 26px;
-      color: #555;
-      margin-left: 20px;
-    }
+  &__folder-icon{
+    margin-left: 30px;
+    color: #c5c5c5;
   }
+}
+
+.material-design-icon.icon-42 > .material-design-icon__svg {
+  height: 42px;
+  width: 42px;
+}
+
+.material-design-icon.icon-30 > .material-design-icon__svg {
+  height: 30px;
+  width: 30px;
 }
 
 .toolbar
 {
+  z-index: 100;
+  top: 0;
+  left: 0;
+  position: fixed;
+  width: 100%;
+  margin-top: 60px;
   border-top: solid rgb(198,198,198) 2px;
   border-bottom: solid rgb(198,198,198) 2px;
   display:flex;
-  flex-direction: row;
-  align-items: center;
 
   &__special{
-    height: 35px;
-    padding: 2px 15px 2px 15px;
-    display:flex;
-    flex-direction: row;
-    align-items: center;
+    padding: 5px 15px 0 15px;
     border-right: solid rgb(198,198,198) 2px;
   }
 
   &__notes{
-    // height: 39px;
-    padding: 0 5px 0 5px;
-    display: inline-block;
+    padding: 3px 5px 0 5px;
     border-right: solid rgb(198,198,198) 2px;
   }
 
-  &__img{
-    margin-left: auto;
-    height: 30px;
+  &__font{
+    padding: 8px 0 0 10px;
+    border-right: solid rgb(198,198,198) 2px;
   }
 }
 
 .editor{
-  &__showTextButton{
-    margin: 5px 0 0 5px;
-    height: 30px;
-    position: fixed;
-    z-index: 1000;
-
-    &:hover{
-      background-color:red;
-    }
-  }
 }
 
-#saveButton
-{
-  height: 30px;
-  width: 30px;
-  background: url('../images/outline_save_black_24dp.png') no-repeat;
-  background-size: 100%;
-  border: 0;
+#saveButton{
+  //border: 0;
   margin-right: 10px;
 }
 
-#undoButton
-{
-  height: 30px;
-  width: 30px;
-  background: url('../images/outline_undo_black_24dp.png') no-repeat;
-  background-size: 100%;
-  border: 0;
+#undoButton{
+  // height: 30px;
+  // width: 30px;
+  // background: url('../images/outline_undo_black_24dp.png') no-repeat;
+  // background-size: 100%;
+  //border: 0;
 }
 
-#redoButton
-{
-  height: 30px;
-  width: 30px;
-  background: url('../images/outline_redo_black_24dp.png') no-repeat;
-  background-size: 100%;
-  border: 0;
+#redoButton{
+  // height: 30px;
+  // width: 30px;
+  // background: url('../images/outline_redo_black_24dp.png') no-repeat;
+  // background-size: 100%;
+  //border: 0;
 }
 
 #graphContainer{
@@ -221,10 +229,10 @@ body{
   cursor: pointer;
 }
 
-#googleDocIframe{
-  width: 100%;
-  //height: 600px;
-  //display:none;
-}
+// #googleDocIframe{
+//   width: 100%;
+//   //display: none;
+//   //visibility: hidden;
+// }
 
 </style>
