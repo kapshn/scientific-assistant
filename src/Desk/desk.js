@@ -144,6 +144,11 @@ function launchEditor(xmlBody)
     launchPropertiesPanel(editor.graph);
 
     calcMargins();
+
+    // Fixing bad layout
+    setTimeout(function(){
+      editor.graph.refresh();
+    }, 5);
   }
 }
 
@@ -406,7 +411,7 @@ function launchNoteToolbar(graph, noteToolbar)
   addTextNote(graph, toolbar, '../images/alpha-t-box-outline-24px.png', 100, 40, '');
   addLinkNote(graph, toolbar, '../images/link-box-variant-outline-24px.png', 100, 40, '');
   addDocumentNote(graph, toolbar, '../images/file-document-outline-24px.png', 100, 40, '');
-  addCitationNote(graph, toolbar, '../images/comment-quote-outline-24px.png', 100, 40, '');
+  addCitationNote(graph, toolbar, '../images/comment-quote-outline-24px.png', 100, 80, '');
 }
 
 function addTextNote(graph, toolbar, icon, w, h, style)
@@ -488,6 +493,12 @@ function addToolbarItem(graph, toolbar, prototype, image)
     vertex.geometry.y = pt.y;
 
     graph.setSelectionCells(graph.importCells([vertex], 0, 0, cell));
+
+    // Fixing bad layout
+    setTimeout(function(){
+      graph.refresh();
+    }, 5);
+
   }
 
   // Creates the image which is used as the drag icon (preview)
