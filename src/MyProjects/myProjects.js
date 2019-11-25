@@ -236,8 +236,11 @@ function deleteFile(t) {
 }
 
 function createFile(t) {
-  if (document.getElementById('fileName').value == '') {
-    alert("Введите название файла!");
+  let found = t.projects.find(obj =>
+    obj.name == document.getElementById('fileName').value
+  )
+  if (typeof(found) != "undefined") {
+    alert("Файл с таким названием уже существует!");
   } else
   chrome.identity.getAuthToken({ interactive: true }, function (token) {
     current_token = token;
