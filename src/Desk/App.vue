@@ -151,10 +151,20 @@
   &__notes{
     padding: 3px 5px 0 5px;
     border-right: solid rgb(198,198,198) 2px;
+
+    img{
+      background-color:red;
+      cursor: pointer;
+      &:hover{
+        color: #808080;
+      }
+    }
   }
 
   &__font{
-    padding: 8px 0 0 10px;
+    display:flex;
+    align-items: center;
+    padding: 3px 10px 0 10px;
     border-right: solid rgb(198,198,198) 2px;
   }
 }
@@ -246,11 +256,6 @@
     border: 1px solid #333;
     border-radius: 5px;
     background-color: white;
-
-    &__title {
-
-    }
-
   }
 
 }
@@ -264,6 +269,14 @@
   border-radius: 5px;
   text-align: center;
   cursor: pointer;
+}
+
+#fontSizeSelect{
+  margin: 0 5px 5px 5px;
+}
+
+#fontFamilySelect{
+  margin: 0 5px 5px 5px;
 }
 
 </style>

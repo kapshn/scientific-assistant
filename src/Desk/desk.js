@@ -148,7 +148,7 @@ function launchEditor(xmlBody)
     // Fixing bad layout
     setTimeout(function(){
       editor.graph.refresh();
-    }, 5);
+    }, 15);
   }
 }
 
@@ -412,6 +412,14 @@ function launchNoteToolbar(graph, noteToolbar)
   addLinkNote(graph, toolbar, '../images/link-box-variant-outline-24px.png', 100, 40, '');
   addDocumentNote(graph, toolbar, '../images/file-document-outline-24px.png', 100, 40, '');
   addCitationNote(graph, toolbar, '../images/comment-quote-outline-24px.png', 100, 80, '');
+
+  // Customize images for notes in toolbar
+  let icons = document.getElementsByClassName("mxToolbarMode");
+  for (let i = 0; i < icons.length; i++) {
+    icons[i].style.width = '30px';
+    icons[i].style.height = '30px';
+    icons[i].classList.add('toolbar-icon');
+  }
 }
 
 function addTextNote(graph, toolbar, icon, w, h, style)
@@ -494,7 +502,7 @@ function addToolbarItem(graph, toolbar, prototype, image)
 
     graph.setSelectionCells(graph.importCells([vertex], 0, 0, cell));
 
-    // Fixing bad layout
+    // Fix bad layout
     setTimeout(function(){
       graph.refresh();
     }, 5);
@@ -504,13 +512,6 @@ function addToolbarItem(graph, toolbar, prototype, image)
   // Creates the image which is used as the drag icon (preview)
   let img = toolbar.addMode(null, image, funct);
   mxUtils.makeDraggable(img, graph, funct);
-
-  // Customize images for notes in toolbar
-  let icons = document.getElementsByClassName("mxToolbarMode");
-  for (let i = 0; i < icons.length; i++) {
-    icons[i].style.width = '30px';
-    icons[i].style.height = '30px';
-  }
 }
 
 function launchFontToolbar(graph)
