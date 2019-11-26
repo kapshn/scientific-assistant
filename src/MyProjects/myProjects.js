@@ -9,6 +9,7 @@ var current_token;
 export default {
   data () {
     return {
+      loading: false,
       projects: null,
       profile: '',
       visible: false,
@@ -25,11 +26,80 @@ export default {
     LogOut: function() {
       logOut();
     },
+    editing(_project,edit) {
+      if (edit==true) {
+        this.projects.forEach(b => {
+          if (b!=_project) b.editing = false
+          else b.editing = true;
+        })
+      } else {
+        _project.editing = false;
+      }
+
+    },
     CloseModal: function() { closeModal(this); },
     DeleteFile: function() { deleteFile(this); },
     SetModalWindowMark: function() { setModalWindowMark(this); },
     CreateFile: function() { createFile(this); },
     Rerender: function() { getFilesList(this); },
+    //RENAME FILES
+    renameFile(newName) {
+      if (newName == '') {
+        alert("Введите название файла!");
+      } else {
+        let found = this.projects.find(obj =>
+          obj.name == newName
+        )
+        if (typeof(found) != "undefined") {
+          alert("Файл с таким названием уже существует!");
+        }
+        else {
+          this.loading = true;
+          chrome.identity.getAuthToken({ interactive: true }, (token) => {
+            let metadata = {
+                'name': newName
+            };
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('PATCH', 'https://www.googleapis.com/drive/v3/files/' + this.selectedProject.id);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Accept', 'application/json');
+            xhr.responseType = 'json';
+            xhr.onload = () => {
+              this.renameDoc(newName,this.selectedProject.docId);
+            };
+            xhr.send(JSON.stringify(metadata));
+
+          });
+
+          this.editing(this.selectedProject,false)
+        }
+      }
+
+
+    },
+    renameDoc(name, docId) {
+
+      chrome.identity.getAuthToken({ interactive: true }, (token) =>{
+
+        let metadata = {
+            'name': name
+        };
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('PATCH', 'https://www.googleapis.com/drive/v3/files/' + docId);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.responseType = 'json';
+        xhr.onload = () => {
+          getFilesList(this);
+        };
+        xhr.send(JSON.stringify(metadata));
+
+      });
+    }
   },
   mounted: function() {
     getAppFolder(this);
@@ -142,7 +212,7 @@ function createSubFolders(t,folderName) {
 }
 
 function getFilesList(t) {
-
+    t.loading = true;
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
       current_token = token;
       var xhr = new XMLHttpRequest();
@@ -156,7 +226,8 @@ function getFilesList(t) {
               id: f.id,
               name: f.name,
               folderId: "",
-              docId: ""
+              docId: "",
+              editing: false
             }
             return a
           }
@@ -195,7 +266,7 @@ function getAssociatedDocs(t) {
           found.folderId = t.filesFolderId;
         }
       }
-
+      t.loading = false;
     };
     xhr.send();
   });
@@ -223,9 +294,9 @@ function deleteFile(t) {
     xhr.responseType = 'json';
     xhr.onload = () => {
       if (xhr.status == 204) {
-        let name = t.selectedProject.name
+        //let name = t.selectedProject.name;
+        deleteDoc(t,t.selectedProject.docId);
         t.selectedProject = null;
-        //setTimeout(() => alert("Проект: " + name + " успешно удалён!"), 1);
       }
       getFilesList(t);
     };
@@ -233,6 +304,17 @@ function deleteFile(t) {
 
   });
 
+}
+
+function deleteDoc(t,docId) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+    current_token = token;
+    var xhr = new XMLHttpRequest();
+    xhr.open('DELETE', "https://www.googleapis.com/drive/v3/files/" + docId);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.responseType = 'json';
+    xhr.send();
+  });
 }
 
 function createFile(t) {
@@ -291,13 +373,13 @@ function createDoc(t,docName) {
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.responseType = 'json';
     xhr.onload = () => {
-      //console.log(xhr.response);
       getFilesList(t);
     };
     xhr.send(form);
 
   });
 }
+
 
 function setModalWindowMark(t) {
   t.visible = true; t.deleteMark = false;

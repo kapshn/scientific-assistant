@@ -2,42 +2,55 @@
   <div id="app">
     <header class="header">
       <img class="header__img" src="../images/logo.png" alt="research assistant logo">
-      <img class="header__folderIcon" src="../images/folder-open.png" alt="folder icon">
-      <h1 class="header__title">{{name}}</h1>
-      <router-link class="header-exit" :to="{ name: 'myprojects' }">
-        <i class="material-icons header-exit__icon">exit_to_app</i>
+      <router-link :to="{ name: 'myprojects' }">
+        <FolderOpenIcon class="header__folder-icon icon-42"/>
       </router-link>
+      <h1 class="header__title">{{name}}</h1>
     </header>
     <div class='toolbar' id="toolbar">
       <div class="toolbar__special">
-        <button id="saveButton"></button>
-        <button id="undoButton"></button>
-        <button id="redoButton"></button>
+        <!--<button id="saveButton"></button>-->
+        <SaveIcon class="icon-30" id="saveButton"/>
+        <!--<button id="undoButton"></button>-->
+        <UndoIcon class="icon-30" id="undoButton"/>
+        <!--<button id="redoButton"></button>-->
+        <RedoIcon class="icon-30" id="redoButton"/>
       </div>
       <div class="toolbar__notes" id="noteToolbar"></div>
       <div class="toolbar__font" id="fontToolbar">
-        <!--<button id="boldButton"></button>-->
         <BoldIcon id="boldButton"/>
         <ItalicIcon id="italicButton"/>
-        <!--<button id="italicButton"></button>-->
-        <!--<button id="underlineButton"></button>-->
         <UnderlineIcon id="underlineButton"/>
+        <select id="fontSizeSelect">
+          <option value="8">8</option>
+          <option value="10">10</option>
+          <option value="12">12</option>
+          <option value="14">14</option>
+          <option value="16">16</option>
+          <option value="18">18</option>
+        </select>
+
+        <select id="fontFamilySelect">
+          <option value="Arial">Arial</option>
+          <option value="Dialog">Dialog</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Courier">Courier</option>
+        </select>
+
       </div>
     </div>
     <div class='editor'>
-      <!--<img id='showTextButton' class="editor__showTextButton" src="../images/script-text-outline.png" alt="script text icon">-->
       <div id="graphContainer" style="overflow:hidden;cursor:default;"></div>       
     </div>
     <TextIcon id='showTextButton' :size="32" />
-
-    <!--<iframe id='googleDocIframe' :src="'https://docs.google.com/document/d/' + docId + '/edit'"></iframe>-->
 
     <div class="modal" v-if="editingWindowVisibility">
       <div class="modal__mask" @click="CloseModal()"></div>
       <div class="modal-window">
           <h1 class="modal-window__title">Редактирование</h1>
           <div id="properties" style="border: solid 1px black; padding: 10px;"></div>
-          <div class="uploadButton" @click="uploadFileWindowVisibility = true" v-if="uploadFileButtonVisibility">Загрузить</div>
+          <div id="uploadButton" @click="uploadFileWindowVisibility = true" v-if="uploadFileButtonVisibility">Загрузить</div>
       </div>
     </div>
 
@@ -53,13 +66,6 @@
 <script src="./desk.js"></script>
 
 <style lang="scss" scoped>
-p {
-  font-size: 20px;
-}
-
-body{
-  margin: 100px;
-}
 
 #showTextButton {
   bottom: 15px;
@@ -105,24 +111,24 @@ body{
     margin-left: 30px;
   }
 
-  &-exit {
-    align-self: flex-end;
-    margin: 0 5px 10px auto;
-    cursor: pointer;
+  &__folder-icon{
+    margin-left: 30px;
+    color: #c5c5c5;
 
-    &:hover {
-      .header-exit__icon {
-        color: #0c73b8;
-      }
-    }
-
-    &__icon {
-      transform: scaleY(1.5);
-      font-size: 26px;
-      color: #555;
-      margin-left: 20px;
+    &:hover{
+      color: #808080;
     }
   }
+}
+
+.material-design-icon.icon-42 > .material-design-icon__svg {
+  height: 42px;
+  width: 42px;
+}
+
+.material-design-icon.icon-30 > .material-design-icon__svg {
+  height: 30px;
+  width: 30px;
 }
 
 .toolbar
@@ -138,53 +144,76 @@ body{
   display:flex;
 
   &__special{
-    padding: 2px 15px 2px 15px;
+    padding: 5px 15px 0 15px;
     border-right: solid rgb(198,198,198) 2px;
   }
 
   &__notes{
-    padding: 0 5px 0 5px;
+    padding: 3px 5px 0 5px;
     border-right: solid rgb(198,198,198) 2px;
   }
 
   &__font{
-    padding: 0 5px 0 5px;
+    padding: 8px 0 0 10px;
     border-right: solid rgb(198,198,198) 2px;
   }
+}
 
-  &__img{
-    margin-left: auto;
-    height: 30px;
+#boldButton{
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
+}
+
+#italicButton{
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
+}
+
+#underlineButton{
+  cursor: pointer;
+  &:hover{
+    color: #808080;
   }
 }
 
 .editor{
-  
 }
 
 #saveButton{
-  height: 30px;
-  width: 30px;
-  background: url('../images/outline_save_black_24dp.png') no-repeat;
-  background-size: 100%;
-  border: 0;
+  //border: 0;
   margin-right: 10px;
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
 }
 
 #undoButton{
-  height: 30px;
-  width: 30px;
-  background: url('../images/outline_undo_black_24dp.png') no-repeat;
-  background-size: 100%;
-  border: 0;
+  // height: 30px;
+  // width: 30px;
+  // background: url('../images/outline_undo_black_24dp.png') no-repeat;
+  // background-size: 100%;
+  //border: 0;
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
 }
 
 #redoButton{
-  height: 30px;
-  width: 30px;
-  background: url('../images/outline_redo_black_24dp.png') no-repeat;
-  background-size: 100%;
-  border: 0;
+  // height: 30px;
+  // width: 30px;
+  // background: url('../images/outline_redo_black_24dp.png') no-repeat;
+  // background-size: 100%;
+  //border: 0;
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
 }
 
 #graphContainer{
@@ -226,7 +255,7 @@ body{
 
 }
 
-.uploadButton {
+#uploadButton {
   font-size: 14px;
   border: 1px solid black;
   width: 100px;
@@ -236,11 +265,5 @@ body{
   text-align: center;
   cursor: pointer;
 }
-
-// #googleDocIframe{
-//   width: 100%;
-//   //display: none;
-//   //visibility: hidden;
-// }
 
 </style>

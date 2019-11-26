@@ -5,12 +5,20 @@ import TextIcon from 'vue-material-design-icons/ScriptTextOutline.vue';
 import BoldIcon from 'vue-material-design-icons/FormatBold.vue';
 import ItalicIcon from 'vue-material-design-icons/FormatItalic.vue';
 import UnderlineIcon from 'vue-material-design-icons/FormatUnderline.vue';
+import FolderOpenIcon from 'vue-material-design-icons/FolderOpen.vue';
+import SaveIcon from 'vue-material-design-icons/ContentSaveOutline.vue';
+import UndoIcon from 'vue-material-design-icons/Undo.vue';
+import RedoIcon from 'vue-material-design-icons/Redo.vue';
 
 Vue.component('ModalWindow', ModalWindow);
 Vue.component('TextIcon', TextIcon);
 Vue.component('BoldIcon', BoldIcon);
 Vue.component('ItalicIcon', ItalicIcon);
 Vue.component('UnderlineIcon', UnderlineIcon);
+Vue.component('FolderOpenIcon', FolderOpenIcon);
+Vue.component('SaveIcon', SaveIcon);
+Vue.component('UndoIcon', UndoIcon);
+Vue.component('RedoIcon', RedoIcon);
 
 let context;
 let fileId;
@@ -31,7 +39,6 @@ export default {
     fileId = this.id;
     docId = this.docId;
     context = this;
-    calcMargins();
     getXML(this);
   },
   methods: {
@@ -41,13 +48,6 @@ export default {
       selectFile(file,this)
     }
   },
-}
-
-function calcMargins() {
-  let header = document.getElementsByClassName('header')[0];
-  let toolbar = document.getElementById('toolbar');
-  let editor = document.getElementsByClassName('editor')[0];
-  editor.style.marginTop = header.offsetHeight + toolbar.offsetHeight + 'px';
 }
 
 function selectFile(file,t) {
@@ -60,7 +60,6 @@ function selectFile(file,t) {
       let edit2 = new mxCellAttributeChange(tempCell, 'name', file.name);
       tempGraph.getModel().execute(edit);
       tempGraph.getModel().execute(edit2);
-      //tempGraph.updateCellSize(tempCell);
     }
     finally
     {
@@ -140,11 +139,16 @@ function launchEditor(xmlBody)
 
     launchKeyHandler(editor);
 
-    launchSaveButton(editor.graph);
+    launchToolbar(editor);
 
-    launchShowTextButton();
+    launchPropertiesPanel(editor.graph);
 
-    launchFontToolbar(editor.graph);
+    calcMargins();
+
+    // Fixing bad layout
+    setTimeout(function(){
+      editor.graph.refresh();
+    }, 5);
   }
 }
 
@@ -214,7 +218,7 @@ function launchGraph(editor, graphContainer)
         let td = document.createElement('td');
 
         td.style.textAlign = 'left';
-        td.style.fontSize = '14px';
+        //td.style.fontSize = '14px';
 
         mxUtils.write(td, cell.getAttribute('text', ''));
         tr.appendChild(td);
@@ -233,7 +237,7 @@ function launchGraph(editor, graphContainer)
 
         //var td2 = document.createElement('td');
         td2.style.textAlign = 'center';
-        td2.style.fontSize = '14px';
+        //td2.style.fontSize = '14px';
 
         mxUtils.write(td2, cell.getAttribute('name', ''));
         td2.onclick = function() {
@@ -256,7 +260,8 @@ function launchGraph(editor, graphContainer)
 
         let td2 = document.createElement('td');
         td2.style.textAlign = 'top';
-        td2.style.fontSize = '14px';
+        //td2.style.fontSize = '14px';
+
 
         mxUtils.write(td2, cell.getAttribute('name', ''));
         td2.onclick = function() {
@@ -280,7 +285,8 @@ function launchGraph(editor, graphContainer)
 
         let td12 = document.createElement('td');
         td12.style.textAlign = 'top';
-        td12.style.fontSize = '14px';
+        //td12.style.fontSize = '14px';
+
         td12.style.paddingLeft = '5px';
         td12.style.borderLeft = '2px solid #ccc';
         td12.style.borderLeftStyle = 'height=\'30%\'';
@@ -300,7 +306,7 @@ function launchGraph(editor, graphContainer)
 
         let td22 = document.createElement('td');
         td22.style.textAlign = 'top';
-        td22.style.fontSize = '14px';
+        //td22.style.fontSize = '14px';
 
         mxUtils.write(td22, cell.getAttribute('name', ''));
         td22.onclick = function() {
@@ -319,13 +325,70 @@ function launchGraph(editor, graphContainer)
       return table;
     }
   };
-
-  launchToolbar(graph, document.getElementById("noteToolbar"));
-
-  launchPropertiesPanel(graph);
 }
 
-function launchToolbar(graph, noteToolbar)
+function launchUndoManager(editor)
+{
+  editor.installUndoHandler(editor.graph);
+
+  let undoButton = document.getElementById('undoButton');
+  undoButton.addEventListener('click', function () {
+    editor.undo();
+  });
+
+  let redoButton = document.getElementById('redoButton');
+  redoButton.addEventListener('click', function () {
+    editor.redo();
+  });
+}
+
+function launchKeyHandler(editor)
+{
+  let keyHandler = new mxDefaultKeyHandler(editor);
+  keyHandler.bindAction(46, 'delete');
+  keyHandler.bindAction(90, 'undo', true);
+  keyHandler.bindAction(89, 'redo', true);
+}
+
+function launchToolbar(editor)
+{
+  launchSaveButton(editor.graph);
+  launchNoteToolbar(editor.graph, document.getElementById("noteToolbar"));
+  launchFontToolbar(editor.graph);
+  launchShowTextButton();
+}
+
+function launchSaveButton(graph)
+{
+  let saveButton = document.getElementById('saveButton');
+  saveButton.addEventListener('click', function () {
+    chrome.identity.getAuthToken({ interactive: true }, function (token) {
+
+      let encoder = new mxCodec();
+      let result = encoder.encode(graph.getModel());
+      let xml = mxUtils.getXml(result);
+
+      let file = new Blob([xml], { type: 'text/xml' });
+
+      let form = new FormData();
+
+      form.append('file', file);
+
+      let xhr = new XMLHttpRequest();
+      xhr.open('PATCH', 'https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media');
+      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+      xhr.setRequestHeader('Content-Type', 'text/xml');
+      xhr.responseType = 'json';
+      xhr.onload = () => {
+        //console.log(xhr.response);
+      };
+      xhr.send(file);
+
+      });
+  });
+}
+
+function launchNoteToolbar(graph, noteToolbar)
 {
   let toolbar = new mxToolbar(noteToolbar);
   toolbar.enabled = false;
@@ -348,7 +411,7 @@ function launchToolbar(graph, noteToolbar)
   addTextNote(graph, toolbar, '../images/alpha-t-box-outline-24px.png', 100, 40, '');
   addLinkNote(graph, toolbar, '../images/link-box-variant-outline-24px.png', 100, 40, '');
   addDocumentNote(graph, toolbar, '../images/file-document-outline-24px.png', 100, 40, '');
-  addCitationNote(graph, toolbar, '../images/comment-quote-outline-24px.png', 100, 40, '');
+  addCitationNote(graph, toolbar, '../images/comment-quote-outline-24px.png', 100, 80, '');
 }
 
 function addTextNote(graph, toolbar, icon, w, h, style)
@@ -358,7 +421,7 @@ function addTextNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('type', 'text');
   note.setAttribute('text', '');
 
-  style = 'fillColor=#fef3b3;strokeColor=#d9d9d9;shadow=1;';
+  style = 'fillColor=#fef3b3;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
   let vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
   vertex.setVertex(true);
@@ -374,7 +437,7 @@ function addLinkNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('link', '');
   note.setAttribute('name', '');
 
-  style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;';
+  style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
   let vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
   vertex.setVertex(true);
@@ -390,7 +453,7 @@ function addDocumentNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('document', '');
   note.setAttribute('name', '');
 
-  style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;';
+  style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
   let vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
   vertex.setVertex(true);
@@ -407,7 +470,7 @@ function addCitationNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('name', '');
   note.setAttribute('citation', '');
 
-  style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;';
+  style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
   let vertex = new mxCell(note, new mxGeometry(0, 0, w, h), style);
   vertex.setVertex(true);
@@ -430,6 +493,12 @@ function addToolbarItem(graph, toolbar, prototype, image)
     vertex.geometry.y = pt.y;
 
     graph.setSelectionCells(graph.importCells([vertex], 0, 0, cell));
+
+    // Fixing bad layout
+    setTimeout(function(){
+      graph.refresh();
+    }, 5);
+
   }
 
   // Creates the image which is used as the drag icon (preview)
@@ -437,11 +506,153 @@ function addToolbarItem(graph, toolbar, prototype, image)
   mxUtils.makeDraggable(img, graph, funct);
 
   // Customize images for notes in toolbar
-  let x = document.getElementsByClassName("mxToolbarMode");
-  for (let i = 0; i < x.length; i++) {
-    x[i].style.width = '30px';
-    x[i].style.height = '30px';
+  let icons = document.getElementsByClassName("mxToolbarMode");
+  for (let i = 0; i < icons.length; i++) {
+    icons[i].style.width = '30px';
+    icons[i].style.height = '30px';
   }
+}
+
+function launchFontToolbar(graph)
+{
+  // Font style
+  let boldButton = document.getElementById('boldButton');
+  let italicButton = document.getElementById('italicButton');
+  let underlineButton = document.getElementById('underlineButton');
+
+  // mxConstants.FONT_BOLD = 1
+  // mxConstants.FONT_ITALIC = 2
+  // mxConstants.FONT_UNDERLINE = 4
+
+  boldButton.addEventListener('click', function(){
+    // All cells
+    //let cells = graph.getChildVertices(graph.getDefaultParent());
+
+    let selectedCell = graph.getSelectionCell();
+    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
+
+    if((curFontStyle == 1) || (curFontStyle == 3) || (curFontStyle == 5) || (curFontStyle == 7))
+    {
+      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_BOLD);
+    }
+    else
+    {
+      if (curFontStyle)
+      {
+        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_BOLD); // 1
+      }
+      else
+      {
+        graph.setCellStyles('fontStyle', mxConstants.FONT_BOLD); // 1
+      }
+    }
+    graph.refresh();
+  });
+
+  italicButton.addEventListener('click', function(){
+    let selectedCell = graph.getSelectionCell();
+    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
+
+    if((curFontStyle == 2) || (curFontStyle == 3) || (curFontStyle == 6) || (curFontStyle == 7))
+    {
+      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_ITALIC);
+    }
+    else
+    {
+      if (curFontStyle)
+      {
+        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_ITALIC); // 2
+      }
+      else
+      {
+        graph.setCellStyles('fontStyle', mxConstants.FONT_ITALIC); // 2
+      }
+    }
+    graph.refresh();
+  });
+
+  underlineButton.addEventListener('click', function(){
+    let selectedCell = graph.getSelectionCell();
+    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
+
+    if((curFontStyle == 4) || (curFontStyle == 5) || (curFontStyle == 6) || (curFontStyle == 7))
+    {
+      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_UNDERLINE);
+    }
+    else
+    {
+      if (curFontStyle)
+      {
+        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_UNDERLINE); // 4
+      }
+      else
+      {
+        graph.setCellStyles('fontStyle', mxConstants.FONT_UNDERLINE); // 4
+      }
+    }
+    graph.refresh();
+  });
+
+  // Font size
+  let fontSizeSelect = document.getElementById("fontSizeSelect");
+  fontSizeSelect.addEventListener("change", function(){
+    graph.setCellStyles('fontSize', fontSizeSelect.value);
+    graph.refresh();
+  });
+
+  // Font family
+  let fontFamilySelect = document.getElementById("fontFamilySelect");
+  fontFamilySelect.addEventListener("change", function(){
+    graph.setCellStyles('fontFamily', fontFamilySelect.value);
+    graph.refresh();
+  });
+}
+
+function launchShowTextButton()
+{
+  let showTextButton = document.getElementById('showTextButton');
+  showTextButton.addEventListener('click', function () {
+
+    let googleDocIframe = document.getElementById('googleDocIframe');
+    let editorContainer = document.getElementsByClassName('editor')[0];
+    let toolbar = document.getElementById('toolbar');
+
+    let headerHeight = document.getElementsByClassName('header')[0].offsetHeight;
+    let tempHeight = window.innerHeight - headerHeight;
+
+    if (googleDocIframe)
+    {
+      if (googleDocIframe.style.display == 'block')
+      {
+        googleDocIframe.style.display = 'none';
+        editorContainer.style.display = 'block';
+        toolbar.style.display = 'flex';
+
+      }
+      else
+      {
+        googleDocIframe.style.display = 'block';
+        editorContainer.style.display = 'none';
+        toolbar.style.display = 'none';
+      }
+    }
+    else
+    {
+      googleDocIframe = document.createElement("iframe");
+      let src = 'https://docs.google.com/document/d/' + docId + '/edit';
+      googleDocIframe.setAttribute("src", src);
+      googleDocIframe.id = 'googleDocIframe';
+      googleDocIframe.style.width = "100%";
+      googleDocIframe.style.display = 'block';
+      googleDocIframe.style.marginTop = headerHeight + 'px';
+      googleDocIframe.style.height = tempHeight.toString() + 'px';
+
+      document.getElementById('app').appendChild(googleDocIframe);
+
+      editorContainer.style.display = 'none';
+      toolbar.style.display = 'none';
+    }
+  });
 }
 
 function launchPropertiesPanel(graph)
@@ -619,183 +830,9 @@ function translateFieldName(fieldName)
   return translatedFieldName;
 }
 
-function launchUndoManager(editor)
-{
-  editor.installUndoHandler(editor.graph);
-
-  let undoButton = document.getElementById('undoButton');
-  undoButton.addEventListener('click', function () {
-    console.log(temp === editor)
-    editor.undo();
-  });
-
-  let redoButton = document.getElementById('redoButton');
-  redoButton.addEventListener('click', function () {
-    editor.redo();
-  });
-}
-
-function launchKeyHandler(editor)
-{
-  let keyHandler = new mxDefaultKeyHandler(editor);
-  keyHandler.bindAction(46, 'delete');
-  keyHandler.bindAction(90, 'undo', true);
-  keyHandler.bindAction(89, 'redo', true);
-}
-
-function launchSaveButton(graph)
-{
-  let saveButton = document.getElementById('saveButton');
-  saveButton.addEventListener('click', function () {
-    chrome.identity.getAuthToken({ interactive: true }, function (token) {
-
-      let encoder = new mxCodec();
-      let result = encoder.encode(graph.getModel());
-      let xml = mxUtils.getXml(result);
-
-      let file = new Blob([xml], { type: 'text/xml' });
-
-      let form = new FormData();
-
-      form.append('file', file);
-
-      let xhr = new XMLHttpRequest();
-      xhr.open('PATCH', 'https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media');
-      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-      xhr.setRequestHeader('Content-Type', 'text/xml');
-      xhr.responseType = 'json';
-      xhr.onload = () => {
-        //console.log(xhr.response);
-      };
-      xhr.send(file);
-
-      });
-  });
-}
-
-function launchShowTextButton()
-{
-  let showTextButton = document.getElementById('showTextButton');
-  showTextButton.addEventListener('click', function () {
-
-    let googleDocIframe = document.getElementById('googleDocIframe');
-    let editorContainer = document.getElementsByClassName('editor')[0];
-    let toolbar = document.getElementById('toolbar');
-
-    let headerHeight = document.getElementsByClassName('header')[0].offsetHeight;
-    let tempHeight = window.innerHeight - headerHeight;
-
-    if (googleDocIframe)
-    {
-      if (googleDocIframe.style.display == 'block')
-      {
-        googleDocIframe.style.display = 'none';
-        editorContainer.style.display = 'block';
-        toolbar.style.display = 'flex';
-
-      }
-      else
-      {
-        googleDocIframe.style.display = 'block';
-        editorContainer.style.display = 'none';
-        toolbar.style.display = 'none';
-      }
-    }
-    else
-    {
-      googleDocIframe = document.createElement("iframe");
-      let src = 'https://docs.google.com/document/d/' + docId + '/edit';
-      googleDocIframe.setAttribute("src", src);
-      googleDocIframe.id = 'googleDocIframe';
-      googleDocIframe.style.width = "100%";
-      googleDocIframe.style.display = 'block';
-      googleDocIframe.style.marginTop = headerHeight + 'px';
-      googleDocIframe.style.height = tempHeight.toString() + 'px';
-
-      document.getElementById('app').appendChild(googleDocIframe);
-
-      editorContainer.style.display = 'none';
-      toolbar.style.display = 'none';
-    }
-  });
-}
-
-function launchFontToolbar(graph)
-{
-  let boldButton = document.getElementById('boldButton');
-  let italicButton = document.getElementById('italicButton');
-  let underlineButton = document.getElementById('underlineButton');
-
-  // mxConstants.FONT_BOLD = 1
-  // mxConstants.FONT_ITALIC = 2
-  // mxConstants.FONT_UNDERLINE = 4
-
-  boldButton.addEventListener('click', function(){
-    // All cells
-    //let cells = graph.getChildVertices(graph.getDefaultParent());
-
-    let selectedCell = graph.getSelectionCell();
-    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
-
-    if((curFontStyle == 1) || (curFontStyle == 3) || (curFontStyle == 5) || (curFontStyle == 7))
-    {
-      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_BOLD);
-    }
-    else
-    {
-      if (curFontStyle)
-      {
-        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_BOLD); // 1
-      }
-      else
-      {
-        graph.setCellStyles('fontStyle', mxConstants.FONT_BOLD); // 1
-      }
-    }
-    graph.refresh();
-  });
-
-  italicButton.addEventListener('click', function(){
-    let selectedCell = graph.getSelectionCell();
-    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
-
-    if((curFontStyle == 2) || (curFontStyle == 3) || (curFontStyle == 6) || (curFontStyle == 7))
-    {
-      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_ITALIC);
-    }
-    else
-    {
-      if (curFontStyle)
-      {
-        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_ITALIC); // 2
-      }
-      else
-      {
-        graph.setCellStyles('fontStyle', mxConstants.FONT_ITALIC); // 2
-      }
-    }
-    graph.refresh();
-  });
-
-  underlineButton.addEventListener('click', function(){
-    let selectedCell = graph.getSelectionCell();
-    let curFontStyle = graph.getCellStyle(selectedCell)['fontStyle'];
-
-    if((curFontStyle == 4) || (curFontStyle == 5) || (curFontStyle == 6) || (curFontStyle == 7))
-    {
-      graph.setCellStyles('fontStyle', curFontStyle - mxConstants.FONT_UNDERLINE);
-    }
-    else
-    {
-      if (curFontStyle)
-      {
-        graph.setCellStyles('fontStyle', curFontStyle + mxConstants.FONT_UNDERLINE); // 4
-      }
-      else
-      {
-        graph.setCellStyles('fontStyle', mxConstants.FONT_UNDERLINE); // 4
-      }
-    }
-    graph.refresh();
-  });
+function calcMargins() {
+  let header = document.getElementsByClassName('header')[0];
+  let toolbar = document.getElementById('toolbar');
+  let editor = document.getElementsByClassName('editor')[0];
+  editor.style.marginTop = header.offsetHeight + toolbar.offsetHeight + 'px';
 }

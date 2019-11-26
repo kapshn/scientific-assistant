@@ -11,7 +11,7 @@
       </div>
     </header>
 
-    <div class="projects">
+    <div class="projects" >
       <div class="projects__head">
         <h3 class="projects__title">Мои проекты</h3>
         <i class="material-icons projects__additem"
@@ -19,12 +19,19 @@
         >add_circle</i>
       </div>
       <div class="projects-block">
-        <Project
+        <div class="loading" v-if="loading">
+          Загрузка
+        </div>
+        <Project v-else
         v-for="project in projects"
+        v-bind:key="project.id"
         v-bind:project="project"
         v-on:popupWindowVisibility="visible = $event"
         v-on:selectedProject="selectedProject = $event"
         v-on:deleteMark="deleteMark = $event;"
+        v-on:rename="renameFile($event)"
+        v-on:editing="editing($event,true)"
+        v-on:editingCancel="editing($event,false)"
         v-on:rerender="Rerender()"
         ></Project>
       </div>
@@ -61,6 +68,17 @@
 <script src="./myProjects.js"></script>
 
 <style lang="scss" scoped>
+.loading {
+  width: 100%;
+  height: 100%;
+  background-color: #555;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+  font-size: 48px;
+  color: white;
+  padding: 30px;
+}
 
 p {
   font-size: 20px;

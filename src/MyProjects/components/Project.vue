@@ -1,14 +1,14 @@
 <template>
   <router-link id="project" class="project" :to="{ name: 'desk', query: { id: project.id, name: project.name, docId: project.docId, folderId: project.folderId} }" @click.native="ConfirmRedirect($event)">
     <i class="material-icons project__img">folder</i>
-    <div class="project__name" v-if="!editVisibility" >
+    <div class="project__name" v-if="!project.editing" >
       {{project.name}}
     </div>
-    <input type="text" v-if="editVisibility" id="projectName" class="project__nameEdit" :value="project.name">
-    <i class="material-icons project__apply" v-if="editVisibility" v-on:click="ApplyFileName();">done</i>
-    <i class="material-icons project__cancel" v-if="editVisibility" v-on:click="CancelEdit();">clear</i>
-    <i class="material-icons project__edit" v-if="!editVisibility" v-on:click="EditFileName();">create</i>
-    <i class="material-icons project__delete" v-if="!editVisibility" v-on:click="SelectFile();">delete</i>
+    <input type="text" v-if="project.editing" id="projectName" class="project__nameEdit" :value="project.name">
+    <i class="material-icons project__apply" v-if="project.editing" v-on:click="ApplyFileName();">done</i>
+    <i class="material-icons project__cancel" v-if="project.editing" v-on:click="CancelEdit();">clear</i>
+    <i class="material-icons project__edit" v-if="!project.editing" v-on:click="EditFileName();">create</i>
+    <i class="material-icons project__delete" v-if="!project.editing" v-on:click="SelectFile();">delete</i>
   </router-link>
 
 </template>
@@ -23,6 +23,7 @@
   padding: 10px;
   flex: 0 0 28%;
   margin: 15px;
+  max-width: 438px;
   border: 1px solid grey;
   display: flex;
   flex-direction: row;
@@ -31,12 +32,14 @@
 
   &__img {
     font-size: 25px;
+    color: #333;
   }
 
   &__name {
-    color: black;
+    color: #333;
     margin-left: 15px;
     font-size: 24px;
+    overflow: hidden;
   }
 
   &__nameEdit {
@@ -74,7 +77,8 @@
     color: #444;
     &:hover {
       color: black;
-      text-shadow: #333 2px 2px 2px;
+      font-size: 20px;
+      //text-shadow: #333 2px 2px 2px;
     }
   }
 
@@ -87,7 +91,8 @@
     color: #444;
     &:hover {
       color: black;
-      text-shadow: #333 2px 2px 2px;
+      font-size: 20px;
+      //text-shadow: #333 2px 2px 2px;
     }
   }
 
