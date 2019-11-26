@@ -50,7 +50,7 @@
       <div class="modal-window">
           <h1 class="modal-window__title">Редактирование</h1>
           <div id="properties" style="border: solid 1px black; padding: 10px;"></div>
-          <div class="uploadButton" @click="uploadFileWindowVisibility = true" v-if="uploadFileButtonVisibility">Загрузить</div>
+          <div id="uploadButton" @click="uploadFileWindowVisibility = true" v-if="uploadFileButtonVisibility">Загрузить</div>
       </div>
     </div>
 
@@ -114,6 +114,10 @@
   &__folder-icon{
     margin-left: 30px;
     color: #c5c5c5;
+
+    &:hover{
+      color: #808080;
+    }
   }
 }
 
@@ -155,12 +159,37 @@
   }
 }
 
+#boldButton{
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
+}
+
+#italicButton{
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
+}
+
+#underlineButton{
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
+}
+
 .editor{
 }
 
 #saveButton{
   //border: 0;
   margin-right: 10px;
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
 }
 
 #undoButton{
@@ -169,6 +198,10 @@
   // background: url('../images/outline_undo_black_24dp.png') no-repeat;
   // background-size: 100%;
   //border: 0;
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
 }
 
 #redoButton{
@@ -177,6 +210,10 @@
   // background: url('../images/outline_redo_black_24dp.png') no-repeat;
   // background-size: 100%;
   //border: 0;
+  cursor: pointer;
+  &:hover{
+    color: #808080;
+  }
 }
 
 #graphContainer{
@@ -218,7 +255,7 @@
 
 }
 
-.uploadButton {
+#uploadButton {
   font-size: 14px;
   border: 1px solid black;
   width: 100px;
@@ -228,11 +265,5 @@
   text-align: center;
   cursor: pointer;
 }
-
-// #googleDocIframe{
-//   width: 100%;
-//   //display: none;
-//   //visibility: hidden;
-// }
 
 </style>
