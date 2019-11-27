@@ -9,6 +9,7 @@ import FolderOpenIcon from 'vue-material-design-icons/FolderOpen.vue';
 import SaveIcon from 'vue-material-design-icons/ContentSaveOutline.vue';
 import UndoIcon from 'vue-material-design-icons/Undo.vue';
 import RedoIcon from 'vue-material-design-icons/Redo.vue';
+import { isString } from 'util';
 
 Vue.component('ModalWindow', ModalWindow);
 Vue.component('TextIcon', TextIcon);
@@ -58,8 +59,10 @@ function selectFile(file,t) {
     {
       let edit = new mxCellAttributeChange(tempCell, 'document', file.id);
       let edit2 = new mxCellAttributeChange(tempCell, 'name', file.name);
+      let edit3 = new mxCellAttributeChange(tempCell, 'previewlink', file.thumbnailLink);
       tempGraph.getModel().execute(edit);
       tempGraph.getModel().execute(edit2);
+      tempGraph.getModel().execute(edit3);
     }
     finally
     {
@@ -143,6 +146,19 @@ function launchEditor(xmlBody)
 
     launchPropertiesPanel(editor.graph);
 
+    //mike
+    launchChangeBorderWidth1(editor.graph);
+    launchChangeBorderWidth2(editor.graph);
+    launchChangeBorderWidth3(editor.graph);
+
+    launchChangeBorderColor1(editor.graph);
+    launchChangeBorderColor2(editor.graph);
+    launchChangeBorderColor3(editor.graph);
+    launchChangeBorderColor4(editor.graph);
+
+    launchClearBorderButton(editor.graph);
+    //mike
+
     calcMargins();
 
     // Fixing bad layout
@@ -212,20 +228,21 @@ function launchGraph(editor, graphContainer)
       table.style.paddingTop = '10px';
       table.style.color = '#000000';
 
-      //РІРµСЂСЃС‚РєР° С‚РµРєСЃС‚РѕРІРѕР№ Р·Р°РјРµС‚РєРё
+      var previewlink = cell.getAttribute('previewlink');
+
+      //textNote
       if (cell.getAttribute('type') == 'text') {
         let tr = document.createElement('tr');
         let td = document.createElement('td');
 
         td.style.textAlign = 'left';
-        //td.style.fontSize = '14px';
 
         mxUtils.write(td, cell.getAttribute('text', ''));
         tr.appendChild(td);
         body.appendChild(tr);
       }
 
-      //РІРµСЂСЃС‚РєР° СЃСЃС‹Р»РєРё
+      //linknote
       if (cell.getAttribute('type') == 'link') {
         let tr = document.createElement('tr');
 
@@ -235,9 +252,7 @@ function launchGraph(editor, graphContainer)
         img.src = '../images/link-variant.png';
         td1.appendChild(img);
 
-        //var td2 = document.createElement('td');
         td2.style.textAlign = 'center';
-        //td2.style.fontSize = '14px';
 
         mxUtils.write(td2, cell.getAttribute('name', ''));
         td2.onclick = function() {
@@ -249,18 +264,24 @@ function launchGraph(editor, graphContainer)
         body.appendChild(tr);
       }
 
-      //РІРµСЂСЃС‚РєР° РґРѕРєСѓРјРµРЅС‚Р°
+      //docnote
       if (cell.getAttribute('type') == 'document') {
         let tr = document.createElement('tr');
 
         let td1 = document.createElement('td');
         let img = document.createElement('img');
-        img.src = '../images/file-document-outline.png';
+
+        if (isString(previewlink)) {
+          img.src = previewlink;
+          img.style.width = '40px';
+        }
+        else {
+          img.src = '../images/file-document-outline.png';
+        }
         td1.appendChild(img);
 
         let td2 = document.createElement('td');
         td2.style.textAlign = 'top';
-        //td2.style.fontSize = '14px';
 
 
         mxUtils.write(td2, cell.getAttribute('name', ''));
@@ -273,7 +294,7 @@ function launchGraph(editor, graphContainer)
         body.appendChild(tr);
       }
 
-      //РІРµСЂСЃС‚РєР° С†РёС‚Р°С‚С‹
+      //citnote
       if (cell.getAttribute('type') == 'citation') {
         let tr1 = document.createElement('tr');
 
@@ -285,7 +306,6 @@ function launchGraph(editor, graphContainer)
 
         let td12 = document.createElement('td');
         td12.style.textAlign = 'top';
-        //td12.style.fontSize = '14px';
 
         td12.style.paddingLeft = '5px';
         td12.style.borderLeft = '2px solid #ccc';
@@ -301,12 +321,17 @@ function launchGraph(editor, graphContainer)
 
         let td21 = document.createElement('td');
         let img2 = document.createElement('img');
-        img2.src = '../images/file-document-outline.png';
+        if (isString(previewlink)) {
+          img2.src = previewlink;
+          img2.style.width = '40px';
+        }
+        else {
+          img2.src = '../images/file-document-outline.png';
+        }
         td21.appendChild(img2);
 
         let td22 = document.createElement('td');
         td22.style.textAlign = 'top';
-        //td22.style.fontSize = '14px';
 
         mxUtils.write(td22, cell.getAttribute('name', ''));
         td22.onclick = function() {
@@ -380,7 +405,6 @@ function launchSaveButton(graph)
       xhr.setRequestHeader('Content-Type', 'text/xml');
       xhr.responseType = 'json';
       xhr.onload = () => {
-        //console.log(xhr.response);
       };
       xhr.send(file);
 
@@ -460,6 +484,7 @@ function addDocumentNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('type', 'document');
   note.setAttribute('document', '');
   note.setAttribute('name', '');
+  note.setAttribute('previewlink', '');
 
   style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
@@ -477,6 +502,7 @@ function addCitationNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('document', '');
   note.setAttribute('name', '');
   note.setAttribute('citation', '');
+  note.setAttribute('previewlink', '');
 
   style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
@@ -718,7 +744,9 @@ function selectionChanged(graph, cell)
     for (let i = 0; i < attrs.length; i++)
     {
       // Creates the textfield for the given property.
-      createTextField(graph, form, cell, attrs[i]);
+      if (attrs[i].name != 'previewlink') {
+        createTextField(graph, form, cell, attrs[i]);
+      }
     }
 
     div.appendChild(form.getTable());
@@ -837,3 +865,108 @@ function calcMargins() {
   let editor = document.getElementsByClassName('editor')[0];
   editor.style.marginTop = header.offsetHeight + toolbar.offsetHeight + 'px';
 }
+
+
+//mike
+function launchChangeBorderWidth1(graph)
+{
+  let borderWidthButton = document.getElementById('changeBorderWidth1');
+  borderWidthButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeWidth', 7);
+    graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderWidth2(graph)
+{
+  let borderWidthButton = document.getElementById('changeBorderWidth2');
+  borderWidthButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeWidth', 4);
+    graph.setCellStyles('shadow', 0);
+    
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderWidth3(graph)
+{
+  let borderWidthButton = document.getElementById('changeBorderWidth3');
+  borderWidthButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeWidth', 2);
+    graph.setCellStyles('shadow', 0);
+    
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderColor1(graph)
+{
+  let borderColorButton = document.getElementById('changeBorderColor1');
+  borderColorButton.addEventListener('click', function() {
+
+      graph.setCellStyles('strokeColor', '#ff1100');
+      graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderColor2(graph)
+{
+  let borderColorButton = document.getElementById('changeBorderColor2');
+  borderColorButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeColor', '#0011ff');
+    graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderColor3(graph)
+{
+  let borderColorButton = document.getElementById('changeBorderColor3');
+  borderColorButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeColor', '#11ff11');
+    graph.setCellStyles('shadow', 0);
+    
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderColor4(graph)
+{
+  let borderColorButton = document.getElementById('changeBorderColor4');
+  borderColorButton.addEventListener('click', function() {
+    
+    graph.setCellStyles('strokeColor', '#000000');
+    graph.setCellStyles('shadow', 0);
+    
+    graph.refresh();
+  });
+}
+
+function launchClearBorderButton(graph)
+{
+  let clearBorderButton = document.getElementById('clearBorderButton');
+  clearBorderButton.addEventListener('click', function() {
+    let selectedCells = graph.getSelectionCells();
+    for (var i = 0; i < selectedCells.length; i++)
+      {
+        if (selectedCells[i].vertex) {
+          selectedCells[i].style += ';strokeColor=#d9d9d9' + ';strokeWidth=1' + ';shadow=1';
+        }
+        else {
+          selectedCells[i].style += ';strokeColor=#6699cc' + ';strokeWidth=1' + ';shadow=0';
+        }
+      }
+    graph.refresh();
+  });
+}
+//mike
