@@ -37,8 +37,27 @@
           <option value="Times New Roman">Times New Roman</option>
           <option value="Courier">Courier</option>
         </select>
-
       </div>
+
+      <ul class="toolbar__border">
+        <li><div id="changeBorderWidth"></div>
+          <ul class="dropdownwidth" style="border: solid rgb(198,198,198) 2px">
+            <li><div id="changeBorderWidth1"></div></li>
+            <li><div id="changeBorderWidth2"></div></li>
+            <li><div id="changeBorderWidth3"></div></li>
+          </ul>
+        </li>
+        <li><div id="changeBorderColor"></div>
+          <ul class="dropdownwidth" style="border: solid rgb(198,198,198) 2px">
+            <li><div id="changeBorderColor1"></div></li>
+            <li><div id="changeBorderColor2"></div></li>
+            <li><div id="changeBorderColor3"></div></li>
+            <li><div id="changeBorderColor4"></div></li>
+          </ul>
+        </li>
+        <li><div id="clearBorderButton"></div></li>
+      </ul>
+
     </div>
     <div class='editor'>
       <div id="graphContainer" style="overflow:hidden;cursor:default;"></div>       
@@ -131,6 +150,50 @@
   width: 30px;
 }
 
+
+//mike
+ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+  z-index: 1;
+}
+
+li {
+  z-index: 1;
+    display: block;
+    float: left;
+    position: relative;
+    text-decoration: none;
+  transition-duration: 0.5s;
+}
+
+li:hover {
+    cursor: pointer;
+}
+
+ul li ul {
+    visibility: hidden;
+  opacity: 0;
+    position: absolute;
+  transition: all 0.5s ease;
+    left: 0;
+  display: none;
+}
+
+ul li:hover > ul,
+ul li ul:hover {
+  visibility: visible;
+  opacity: 1;
+  display: block;
+}
+
+ul li ul li {
+    clear: both;
+  width: 100%;
+}
+//mike
+
 .toolbar
 {
   z-index: 100;
@@ -167,6 +230,102 @@
     padding: 3px 10px 0 10px;
     border-right: solid rgb(198,198,198) 2px;
   }
+
+//mike
+  &__border{
+      height: 35px;
+      padding: 2px 8px 2px 8px;
+      display:flex;
+      flex-direction: row;
+      align-items: center;
+      border-right: solid rgb(198,198,198) 2px;
+    }
+//mike
+}
+
+#changeBorderWidth
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-width.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderWidth1
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-width-1.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderWidth2
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-width-2.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderWidth3
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-width-3.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+
+#changeBorderColor
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-color.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+  margin-left: 5px;
+}
+#changeBorderColor1
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-color-1.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderColor2
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-color-2.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderColor3
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-color-3.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderColor4
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-width-1.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+
+#clearBorderButton
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/clear-button.png') no-repeat;
+  background-size: 100%;
+  margin-left: 3px;
+  border: 0;
 }
 
 #boldButton{
