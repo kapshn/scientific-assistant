@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <div class="notify">
+      Сохранено
+    </div>
     <header class="header">
       <img class="header__img" src="../images/logo.png" alt="research assistant logo">
       <router-link :to="{ name: 'myprojects' }">
@@ -87,7 +90,112 @@
 
 <script src="./desk.js"></script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+.notify {
+  border-radius: 20px;
+  font-size: 24px;
+  color: #323232;
+  background-color: #2EA169;
+  border: solid #c6c6c6 1px;
+  position: fixed;
+  top: -50px;
+  padding: 15px;
+  color: white;
+  left: 50%;
+  z-index: 200;
+  transform: translateX(-50%);
+  transition: 0.5s;
+  display: none;
+
+  &__show {
+      top: 47px;
+  }
+
+}
+
+.note {
+  &__text {
+    padding: 15px;
+    text-align: left;
+  }
+
+  &-link {
+    padding: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &__img {
+      margin-right: 10px;
+      width: 20px;
+    }
+
+    &__name {
+      color: #373737;
+    }
+  }
+
+  &-doc {
+    display: flex;
+    flex-direction: row;
+    padding: 15px;
+    align-items: center;
+
+    &__img {
+      width: 40px;
+      border: 1px solid #E3E3E3;
+      margin-right: 10px;
+    }
+
+    &__name {
+      color: #373737;
+    }
+  }
+
+  &-cit {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+
+    &-quote {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      border-bottom: solid #c6c6c6 1px;
+      padding: 5px;
+
+      &__img {
+        margin-right: 10px;
+        padding-right: 5px;
+        width: 20px;
+        border-right: solid #c6c6c6 1px;
+      }
+
+      &__text {
+        text-align: left;
+        color: #373737;
+      }
+    }
+
+    &-doc {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-top: 10px;
+
+      &__img {
+        margin-right: 10px;
+        width: 40px;
+        border: 1px solid #E3E3E3;
+      }
+
+      &__text {
+        text-align: left;
+        color: #373737;
+      }
+    }
+  }
+}
 
 #showTextButton {
   bottom: 15px;
@@ -167,34 +275,29 @@
 .dropdown {
   position: relative;
   display: inline-block;
-}
+  &-content {
+    display: none;
+    position: absolute;
+    //min-width: 160px;
+    border: 1px solid #CCC;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
 
-.dropdown-content {
-  display: none;
-  position: absolute;
-  //min-width: 160px;
-  border: 1px solid #CCC;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
+    & div {
+      text-decoration: none;
+      cursor: pointer;
+    }
 
-.dropdown-content div {
-  //color: black;
-  //padding: 12px 16px;
-  text-decoration: none;
-  //display: block;
-  cursor: pointer;
-}
-
-.dropdown-content a:hover {
-  background-color: #f1f1f1
+    & a:hover {
+      background-color: #f1f1f1
+    }
+  }
 }
 
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
-/* Change the background color of the dropdown button when the dropdown content is shown */
 .dropdown:hover .dropbtn {
 }
 //mike
@@ -211,6 +314,16 @@
   border-bottom: solid rgb(198,198,198) 1px;
   display:flex;
 
+  &-icon{
+    height:30px;
+    width:30px;
+    opacity: 0.8;
+    cursor: pointer;
+    &:hover{
+      opacity: 1;
+    }
+  }
+
   &__nextdoor {
     align-items: center;
     display: flex;
@@ -221,7 +334,7 @@
   &__item {
     color: #969696;
     &:hover {
-      color: #4D4D4D;
+      color: #4D4D4D!important;
     }
   }
 
@@ -240,7 +353,6 @@
     border-right: solid rgb(198,198,198) 1px;
 
     img{
-      background-color:red;
       cursor: pointer;
       margin: 0;
       &:hover{
@@ -335,6 +447,8 @@
 {
   height: 30px;
   width: 30px;
+  position: relative;
+  top: 3px;
 }
 
 #changeBorderColor1

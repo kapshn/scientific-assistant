@@ -185,11 +185,10 @@ function getThumbnailLink(cell,img) {
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.responseType = 'json';
     xhr.onload = () => {
-      if (xhr.status == 200) {
-        //console.log(xhr.response.thumbnailLink)
+      if (xhr.status == 200 && typeof(xhr.response.thumbnailLink) != "undefined") {
         img.src = xhr.response.thumbnailLink;
         img.style.width = '40px';
-        //cell.setAttribute('previewlink', xhr.response.thumbnailLink);
+        cell.setAttribute('previewlink', xhr.response.thumbnailLink);
       }
     };
     xhr.send();
@@ -248,137 +247,126 @@ function launchGraph(editor, graphContainer)
   {
     if(cell.isVertex())
     {
-      let body = document.createElement('tbody');
-      let table = document.createElement('table');
-
-      table.style.padding = '20px';
-      table.style.paddingBottom = '10px';
-      table.style.paddingTop = '10px';
-      table.style.color = '#000000';
+      let note = document.createElement('div');
+      note.classList.add('note');
 
       var previewlink = cell.getAttribute('previewlink');
 
       //textNote
       if (cell.getAttribute('type') == 'text') {
-        let tr = document.createElement('tr');
-        let td = document.createElement('td');
+        let note__text = document.createElement('div');
+        note__text.classList.add('note__text');
 
-        td.style.textAlign = 'left';
-
-        mxUtils.write(td, cell.getAttribute('text', ''));
-        tr.appendChild(td);
-        body.appendChild(tr);
+        //mxUtils.write(note_text__text, cell.getAttribute('text', ''));
+        note__text.innerText = cell.getAttribute('text', '');
+        note.appendChild(note__text);
       }
 
       //linknote
       if (cell.getAttribute('type') == 'link') {
-        let tr = document.createElement('tr');
+        let note_link = document.createElement('div');
+        note_link.classList.add('note-link');
 
-        let td1 = document.createElement('td');
-        let td2 = document.createElement('td');
-        let img = document.createElement('img');
-        img.src = '../images/link-variant.png';
-        td1.appendChild(img);
+        let note_link__img = document.createElement('img');
+        note_link__img.src = '../images/link.png';
+        note_link__img.classList.add('note-link__img');
 
-        td2.style.textAlign = 'center';
+        let note_link__name = document.createElement('div');
+        note_link__name.classList.add('note-link__name');
+        mxUtils.write(note_link__name, cell.getAttribute('name', ''));
 
-        mxUtils.write(td2, cell.getAttribute('name', ''));
-        td2.onclick = function() {
+        note_link__name.onclick = function() {
           window.open(cell.getAttribute('link', ''));
         };
 
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        body.appendChild(tr);
+        note_link.appendChild(note_link__img);
+        note_link.appendChild(note_link__name);
+        note.appendChild(note_link);
       }
 
       //docnote
       if (cell.getAttribute('type') == 'document') {
-        let tr = document.createElement('tr');
+        let note_doc = document.createElement('div');
+        note_doc.classList.add('note-doc');
 
-        let td1 = document.createElement('td');
-        let img = document.createElement('img');
+        let note_doc__img = document.createElement('img');
+        note_doc__img.classList.add('note-doc__img');
 
         if (isString(previewlink)&&(previewlink!='none')) {
-          img.src = previewlink;
-          img.style.width = '40px';
+          note_doc__img.src = previewlink;
+          note_doc__img.style.width = '40px';
         }
         else {
-          img.src = '../images/file-document-outline.png';
-          getThumbnailLink(cell,img);
+          note_doc__img.src = '../images/doc.png';
+          if (cell.getAttribute('document','cum')!='cum') getThumbnailLink(cell,note_doc__img);
         }
-        td1.appendChild(img);
 
-        let td2 = document.createElement('td');
-        td2.style.textAlign = 'top';
-
-
-        mxUtils.write(td2, cell.getAttribute('name', ''));
-        td2.onclick = function() {
+        let note_doc__name = document.createElement('div');
+        note_doc__name.classList.add('note-doc__name');
+        mxUtils.write(note_doc__name, cell.getAttribute('name', ''));
+        note_doc__name.onclick = function() {
           window.open('https://drive.google.com/open?id=' + cell.getAttribute('document', ''));
         };
 
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        body.appendChild(tr);
+        note_doc.appendChild(note_doc__img);
+        note_doc.appendChild(note_doc__name);
+        note.appendChild(note_doc);
       }
 
       //citnote
       if (cell.getAttribute('type') == 'citation') {
-        let tr1 = document.createElement('tr');
+        let note_cit = document.createElement('div');
+        note_cit.classList.add('note-cit');
 
-        let td11 = document.createElement('td');
-        td11.style.paddingRight = '5px';
-        let img1 = document.createElement('img');
-        img1.src = '../images/format-quote-close.png';
-        td11.appendChild(img1);
+        //Цитата
+        let note_cit_quote = document.createElement('div');
+        note_cit_quote.classList.add('note-cit-quote');
 
-        let td12 = document.createElement('td');
-        td12.style.textAlign = 'top';
+        let note_cit_quote__img = document.createElement('img');
+        note_cit_quote__img.src = '../images/quote.png';
+        note_cit_quote__img.classList.add('note-cit-quote__img');
 
-        td12.style.paddingLeft = '5px';
-        td12.style.borderLeft = '2px solid #ccc';
-        td12.style.borderLeftStyle = 'height=\'30%\'';
+        let note_cit_quote__text = document.createElement('div');
+        note_cit_quote__text.classList.add('note-cit-quote__text');
+        note_cit_quote__text.innerText = cell.getAttribute('citation', '');
 
+        note_cit_quote.appendChild(note_cit_quote__img);
+        note_cit_quote.appendChild(note_cit_quote__text);
 
-        mxUtils.write(td12, cell.getAttribute('citation', ''));
+        //Док
+        let note_cit_doc = document.createElement('div');
+        note_cit_doc.classList.add('note-cit-doc');
 
-        tr1.appendChild(td11);
-        tr1.appendChild(td12);
+        let note_cit_doc__img = document.createElement('img');
+        note_cit_doc__img.classList.add('note-cit-doc__img');
 
-        let tr2 = document.createElement('tr');
-
-        let td21 = document.createElement('td');
-        let img2 = document.createElement('img');
-
-        if (isString(previewlink)&&(previewlink!='none')) {
-          img2.src = previewlink;
-          img2.style.width = '40px';
-        }
-        else {
-          img2.src = '../images/file-document-outline.png';
-          getThumbnailLink(cell,img2);
-        }
-        td21.appendChild(img2);
-
-        let td22 = document.createElement('td');
-        td22.style.textAlign = 'top';
-
-        mxUtils.write(td22, cell.getAttribute('name', ''));
-        td22.onclick = function() {
+        let note_cit_doc__text = document.createElement('div');
+        note_cit_doc__text.classList.add('note-cit-doc__text');
+        mxUtils.write(note_cit_doc__text, cell.getAttribute('name', ''));
+        note_cit_doc__text.onclick = function() {
           window.open('https://drive.google.com/open?id=' + cell.getAttribute('document', ''));
         };
 
-        tr2.appendChild(td21);
-        tr2.appendChild(td22);
+        if (isString(previewlink)&&(previewlink!='none')) {
+          note_cit_doc__img.src = previewlink;
+          note_cit_doc__img.style.width = '40px';
+        }
+        else {
+          note_cit_doc__img.src = '../images/doc.png';
+          if (cell.getAttribute('document','cum')!='cum') getThumbnailLink(cell,note_cit_quote__img);
+        }
 
-        body.appendChild(tr1);
-        body.appendChild(tr2);
+        note_cit_doc.appendChild(note_cit_doc__img);
+        note_cit_doc.appendChild(note_cit_doc__text);
+
+        note_cit.appendChild(note_cit_quote);
+        note_cit.appendChild(note_cit_doc);
+
+        note.appendChild(note_cit);
+
       }
 
-      table.appendChild(body);
-
-      return table;
+      return note;
     }
   };
 }
@@ -417,7 +405,6 @@ function launchToolbar(editor)
 //SAVE PROJECT
 
 function saveProject(graph) {
-  console.log("ass");
   chrome.identity.getAuthToken({ interactive: true }, function (token) {
 
     let encoder = new mxCodec();
@@ -436,7 +423,19 @@ function saveProject(graph) {
     xhr.setRequestHeader('Content-Type', 'text/xml');
     xhr.responseType = 'json';
     xhr.onload = () => {
-      //console.log(xhr.response);
+      let notify = document.getElementsByClassName('notify')[0];
+      notify.style.display = "block";
+      setTimeout(() => {
+        notify.classList.add('notify__show');
+
+        setTimeout(() => {
+          notify.classList.remove('notify__show');
+          setTimeout(() => {
+            notify.style.display = "none";
+          }, 300);
+        }, 2000);
+
+      }, 5);
     };
     xhr.send(file);
 
@@ -444,7 +443,7 @@ function saveProject(graph) {
 }
 
 //autosave
-//setInterval(function() {  saveProject(tempGraph); }, 1000 * 60 * 3);
+setInterval(function() {  saveProject(tempGraph); }, 1000 * 60 * 3);
 
 function launchSaveButton(graph)
 {
