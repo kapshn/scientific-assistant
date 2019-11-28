@@ -1,8 +1,10 @@
 import Vue from 'vue'
 import App from './App'
 import Project from './components/Project.vue'
+import {Stretch} from 'vue-loading-spinner'
 
 Vue.component('Project', Project);
+Vue.component('Stretch', Stretch);
 
 var current_token;
 

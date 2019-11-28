@@ -20,7 +20,7 @@
       </div>
       <div class="projects-block">
         <div class="loading" v-if="loading">
-          Загрузка
+          <Stretch background="#0870b7"></Stretch>
         </div>
         <Project v-else
         v-for="project in projects"
@@ -49,10 +49,10 @@
           </div>
       </div>
       <div class="modal-window" v-else>
-        <form action="">
+        <form action="" autocomplete="off">
           <h1 class="modal-window__title">Создать проект</h1>
           <div class="modal-window__inputTitle">Имя проекта*</div>
-          <input type="text" class="modal-window__input" id="fileName" v-model="fileName">
+          <input type="text" class="modal-window__input" id="fileName" v-model="fileName" maxlength="80">
           <div class="modal-window__buttons">
             <button class="createbutton" type="button" @click="CreateFile()" :disabled="fileName.length == 0">Создать</button>
             <button type="button" @click="CloseModal()">Отмена</button>
@@ -69,15 +69,12 @@
 
 <style lang="scss" scoped>
 .loading {
-  width: 100%;
   height: 100%;
-  background-color: #555;
   align-items: center;
   text-align: center;
   z-index: 10;
-  font-size: 48px;
-  color: white;
   padding: 30px;
+  margin: 0 auto;
 }
 
 p {
@@ -162,9 +159,15 @@ body {
 
   &__additem {
     margin-left: 15px;
+    padding-top: 4px;
     color: #0c73b8;
     text-align: center;
+    opacity: 0.8;
     cursor: pointer;
+    transition: 0.1s ease-in-out;
+    &:hover {
+      opacity: 1;
+    }
   }
 
   &-block {
@@ -266,11 +269,18 @@ body {
         background-color: white;
         font-size: 18px;
         cursor: pointer;
+        transition: 0.1s ease-in-out;
+
+        &:first-child:hover {
+          background-color: #005892;
+        }
 
         &:last-child {
           background-color: white;
           color: #777;
-
+          &:hover {
+            background-color: #EBEBEB;
+          }
         }
       }
 

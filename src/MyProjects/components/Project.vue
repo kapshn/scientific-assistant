@@ -18,7 +18,7 @@
 <style lang="scss" scoped>
 .project {
   text-decoration: none;
-  color: black;
+  color: #8B8B8B;
   opacity: 0.6;
   padding: 10px;
   flex: 0 0 28%;
@@ -38,15 +38,15 @@
   &__name {
     color: #333;
     margin-left: 15px;
-    font-size: 24px;
+    font-size: 18px;
     overflow: hidden;
   }
 
   &__nameEdit {
     border: none;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #333;
     outline: none;
-    font-size: 24px;
+    font-size: 18px;
     width: 100%;
     margin: 0 5px;
   }
@@ -55,7 +55,7 @@
       cursor: pointer;
       &:hover {
         color: red;
-        text-shadow: #333 2px 2px 2px;
+        font-size: 25px;
       }
   }
 
@@ -63,7 +63,7 @@
     cursor: pointer;
     &:hover {
       color: green;
-      text-shadow: #333 2px 2px 2px;
+      font-size: 25px;
     }
   }
 
@@ -74,11 +74,11 @@
     font-size: 18px;
     margin-right: 5px;
     cursor: pointer;
-    color: #444;
+    color: #8B8B8B;
+    transition: 0.3s ease-in-out;
     &:hover {
-      color: black;
-      font-size: 20px;
-      //text-shadow: #333 2px 2px 2px;
+      color: #636363;
+      font-size: 19px;
     }
   }
 
@@ -88,10 +88,11 @@
     font-size: 18px;
     margin-right: 5px;
     cursor: pointer;
-    color: #444;
+    color: #8B8B8B;
+    transition: 0.3s ease-in-out;
     &:hover {
-      color: black;
-      font-size: 20px;
+      color: #636363;
+      font-size: 19px;
       //text-shadow: #333 2px 2px 2px;
     }
   }

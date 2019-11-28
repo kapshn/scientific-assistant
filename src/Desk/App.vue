@@ -8,19 +8,21 @@
       <h1 class="header__title">{{name}}</h1>
     </header>
     <div class='toolbar' id="toolbar">
+      <div class="toolbar__nextdoor">
+        <SaveIcon class="icon-30 toolbar__item" id="saveButton"/>
+      </div>
       <div class="toolbar__special">
         <!--<button id="saveButton"></button>-->
-        <SaveIcon class="icon-30" id="saveButton"/>
         <!--<button id="undoButton"></button>-->
-        <UndoIcon class="icon-30" id="undoButton"/>
+        <UndoIcon class="icon-30 toolbar__item" id="undoButton"/>
         <!--<button id="redoButton"></button>-->
-        <RedoIcon class="icon-30" id="redoButton"/>
+        <RedoIcon class="icon-30 toolbar__item" id="redoButton"/>
       </div>
       <div class="toolbar__notes" id="noteToolbar"></div>
       <div class="toolbar__font" id="fontToolbar">
-        <BoldIcon id="boldButton"/>
-        <ItalicIcon id="italicButton"/>
-        <UnderlineIcon id="underlineButton"/>
+        <BoldIcon id="boldButton" class="toolbar__item"/>
+        <ItalicIcon id="italicButton" class="toolbar__item"/>
+        <UnderlineIcon id="underlineButton" class="toolbar__item"/>
         <select id="fontSizeSelect">
           <option value="8">8</option>
           <option value="10">10</option>
@@ -37,11 +39,31 @@
           <option value="Times New Roman">Times New Roman</option>
           <option value="Courier">Courier</option>
         </select>
-
       </div>
+
+      <div class="toolbar-border">
+        <div class="dropdown">
+          <FormatLineWeight id="changeBorderWidth" class="toolbar__item dropbtn"/>
+          <div class="dropdown-content">
+            <div id="changeBorderWidth1"></div>
+            <div id="changeBorderWidth2"></div>
+            <div id="changeBorderWidth3"></div>
+          </div>
+        </div>
+        <div class="dropdown">
+          <FormatColorFill id="changeBorderColor" class="toolbar__item dropbtn"/>
+          <div class="dropdown-content">
+            <div id="changeBorderColor1"></div>
+            <div id="changeBorderColor2"></div>
+            <div id="changeBorderColor3"></div>
+            <div id="changeBorderColor4"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class='editor'>
-      <div id="graphContainer" style="overflow:hidden;cursor:default;"></div>       
+      <div id="graphContainer" style="overflow:hidden;cursor:default;"></div>
     </div>
     <TextIcon id='showTextButton' :size="32" />
 
@@ -72,10 +94,11 @@
   left: 15px;
   position: fixed;
   z-index: 100;
+  color: #808080;
   cursor: pointer;
 
   &:hover{
-    color: #808080;
+    color: #0870b7;
   }
 }
 
@@ -131,6 +154,51 @@
   width: 30px;
 }
 
+
+//mike
+.dropbtn {
+  color: white;
+  //padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  //min-width: 160px;
+  border: 1px solid #CCC;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content div {
+  //color: black;
+  //padding: 12px 16px;
+  text-decoration: none;
+  //display: block;
+  cursor: pointer;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+}
+//mike
+
 .toolbar
 {
   z-index: 100;
@@ -139,24 +207,177 @@
   position: fixed;
   width: 100%;
   margin-top: 60px;
-  border-top: solid rgb(198,198,198) 2px;
-  border-bottom: solid rgb(198,198,198) 2px;
+  border-top: solid rgb(198,198,198) 1px;
+  border-bottom: solid rgb(198,198,198) 1px;
   display:flex;
 
+  &__nextdoor {
+    align-items: center;
+    display: flex;
+    margin-left: 8px;
+    position: relative;
+  }
+
+  &__item {
+    color: #969696;
+    &:hover {
+      color: #4D4D4D;
+    }
+  }
+
   &__special{
-    padding: 5px 15px 0 15px;
-    border-right: solid rgb(198,198,198) 2px;
+    padding: 0 10px 0 10px;
+    border-right: solid rgb(198,198,198) 1px;
+    border-left: solid rgb(198,198,198) 1px;
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+
   }
 
   &__notes{
     padding: 3px 5px 0 5px;
-    border-right: solid rgb(198,198,198) 2px;
+    border-right: solid rgb(198,198,198) 1px;
+
+    img{
+      background-color:red;
+      cursor: pointer;
+      margin: 0;
+      &:hover{
+        color: #808080;
+      }
+    }
   }
 
   &__font{
-    padding: 8px 0 0 10px;
-    border-right: solid rgb(198,198,198) 2px;
+    display:flex;
+    align-items: center;
+    padding: 3px 10px 0 10px;
+    border-right: solid rgb(198,198,198) 1px;
   }
+
+//mike
+  &-border{
+      height: auto;
+      padding: 2px 8px 2px 8px;
+      display:flex;
+      flex-direction: row;
+      align-items: center;
+      border-right: solid rgb(198,198,198) 1px;
+
+      &__line {
+        ul {
+          visibility: hidden;
+          opacity: 0;
+          position: absolute;
+          transition: all 0.5s ease;
+          left: 0;
+          display: none;
+          li {
+            clear: both;
+            width: 100%;
+          }
+        }
+      }
+
+      &__fill {
+        ul {
+          visibility: hidden;
+          opacity: 0;
+          position: absolute;
+          transition: all 0.5s ease;
+          left: 0;
+          display: none;
+          li {
+            clear: both;
+            width: 100%;
+          }
+        }
+
+      }
+    }
+//mike
+}
+
+#changeBorderWidth
+{
+  height: 22px;
+  width: 22px;
+  margin-right: 15px;
+}
+
+#changeBorderWidth1
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-width-1.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderWidth2
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-width-2.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderWidth3
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-width-3.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+
+#changeBorderColor
+{
+  height: 30px;
+  width: 30px;
+}
+
+#changeBorderColor1
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-color-1.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderColor2
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-color-2.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderColor3
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-color-3.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+#changeBorderColor4
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/line-width-1.png') no-repeat;
+  background-size: 100%;
+  border: 0;
+}
+
+#clearBorderButton
+{
+  height: 30px;
+  width: 30px;
+  background: url('../images/clear-button.png') no-repeat;
+  background-size: 100%;
+  margin-left: 3px;
+  border: 0;
 }
 
 #boldButton{
@@ -246,11 +467,6 @@
     border: 1px solid #333;
     border-radius: 5px;
     background-color: white;
-
-    &__title {
-
-    }
-
   }
 
 }
@@ -264,6 +480,14 @@
   border-radius: 5px;
   text-align: center;
   cursor: pointer;
+}
+
+#fontSizeSelect{
+  margin: 0 5px 5px 5px;
+}
+
+#fontFamilySelect{
+  margin: 0 5px 5px 5px;
 }
 
 </style>

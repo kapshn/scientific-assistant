@@ -9,6 +9,9 @@ import FolderOpenIcon from 'vue-material-design-icons/FolderOpen.vue';
 import SaveIcon from 'vue-material-design-icons/ContentSaveOutline.vue';
 import UndoIcon from 'vue-material-design-icons/Undo.vue';
 import RedoIcon from 'vue-material-design-icons/Redo.vue';
+import { isString } from 'util';
+import FormatColorFill from 'vue-material-design-icons/FormatColorFill.vue';
+import FormatLineWeight from 'vue-material-design-icons/FormatLineWeight.vue';
 
 Vue.component('ModalWindow', ModalWindow);
 Vue.component('TextIcon', TextIcon);
@@ -19,6 +22,8 @@ Vue.component('FolderOpenIcon', FolderOpenIcon);
 Vue.component('SaveIcon', SaveIcon);
 Vue.component('UndoIcon', UndoIcon);
 Vue.component('RedoIcon', RedoIcon);
+Vue.component('FormatColorFill', FormatColorFill);
+Vue.component('FormatLineWeight', FormatLineWeight);
 
 let context;
 let fileId;
@@ -56,10 +61,19 @@ function selectFile(file,t) {
     tempGraph.getModel().beginUpdate();
     try
     {
+      let thumbLink = file.thumbnailLink
+      if (typeof(file.thumbnailLink) == "undefined") {
+        thumbLink = 'none';
+      }
+
+      //console.log(thumbLink);
+
       let edit = new mxCellAttributeChange(tempCell, 'document', file.id);
       let edit2 = new mxCellAttributeChange(tempCell, 'name', file.name);
+      let edit3 = new mxCellAttributeChange(tempCell, 'previewlink', thumbLink);
       tempGraph.getModel().execute(edit);
       tempGraph.getModel().execute(edit2);
+      tempGraph.getModel().execute(edit3);
     }
     finally
     {
@@ -130,6 +144,7 @@ function launchEditor(xmlBody)
 
     let editor = new mxEditor();
     launchGraph(editor, document.getElementById('graphContainer'));
+    tempGraph = editor.graph;
 
     let doc = mxUtils.parseXml(xmlBody);
     let codec = new mxCodec(doc);
@@ -143,13 +158,42 @@ function launchEditor(xmlBody)
 
     launchPropertiesPanel(editor.graph);
 
+    //mike
+    launchChangeBorderWidth1(editor.graph);
+    launchChangeBorderWidth2(editor.graph);
+    launchChangeBorderWidth3(editor.graph);
+
+    launchChangeBorderColor1(editor.graph);
+    launchChangeBorderColor2(editor.graph);
+    launchChangeBorderColor3(editor.graph);
+    launchChangeBorderColor4(editor.graph);
+    //mike
+
     calcMargins();
 
     // Fixing bad layout
     setTimeout(function(){
       editor.graph.refresh();
-    }, 5);
+    }, 15);
   }
+}
+
+function getThumbnailLink(cell,img) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('get', "https://www.googleapis.com/drive/v3/files/" + cell.getAttribute('document') + "?fields=thumbnailLink");
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.responseType = 'json';
+    xhr.onload = () => {
+      if (xhr.status == 200) {
+        //console.log(xhr.response.thumbnailLink)
+        img.src = xhr.response.thumbnailLink;
+        img.style.width = '40px';
+        //cell.setAttribute('previewlink', xhr.response.thumbnailLink);
+      }
+    };
+    xhr.send();
+  });
 }
 
 function launchGraph(editor, graphContainer)
@@ -212,20 +256,21 @@ function launchGraph(editor, graphContainer)
       table.style.paddingTop = '10px';
       table.style.color = '#000000';
 
-      //РІРµСЂСЃС‚РєР° С‚РµРєСЃС‚РѕРІРѕР№ Р·Р°РјРµС‚РєРё
+      var previewlink = cell.getAttribute('previewlink');
+
+      //textNote
       if (cell.getAttribute('type') == 'text') {
         let tr = document.createElement('tr');
         let td = document.createElement('td');
 
         td.style.textAlign = 'left';
-        //td.style.fontSize = '14px';
 
         mxUtils.write(td, cell.getAttribute('text', ''));
         tr.appendChild(td);
         body.appendChild(tr);
       }
 
-      //РІРµСЂСЃС‚РєР° СЃСЃС‹Р»РєРё
+      //linknote
       if (cell.getAttribute('type') == 'link') {
         let tr = document.createElement('tr');
 
@@ -235,9 +280,7 @@ function launchGraph(editor, graphContainer)
         img.src = '../images/link-variant.png';
         td1.appendChild(img);
 
-        //var td2 = document.createElement('td');
         td2.style.textAlign = 'center';
-        //td2.style.fontSize = '14px';
 
         mxUtils.write(td2, cell.getAttribute('name', ''));
         td2.onclick = function() {
@@ -249,18 +292,25 @@ function launchGraph(editor, graphContainer)
         body.appendChild(tr);
       }
 
-      //РІРµСЂСЃС‚РєР° РґРѕРєСѓРјРµРЅС‚Р°
+      //docnote
       if (cell.getAttribute('type') == 'document') {
         let tr = document.createElement('tr');
 
         let td1 = document.createElement('td');
         let img = document.createElement('img');
-        img.src = '../images/file-document-outline.png';
+
+        if (isString(previewlink)&&(previewlink!='none')) {
+          img.src = previewlink;
+          img.style.width = '40px';
+        }
+        else {
+          img.src = '../images/file-document-outline.png';
+          getThumbnailLink(cell,img);
+        }
         td1.appendChild(img);
 
         let td2 = document.createElement('td');
         td2.style.textAlign = 'top';
-        //td2.style.fontSize = '14px';
 
 
         mxUtils.write(td2, cell.getAttribute('name', ''));
@@ -273,7 +323,7 @@ function launchGraph(editor, graphContainer)
         body.appendChild(tr);
       }
 
-      //РІРµСЂСЃС‚РєР° С†РёС‚Р°С‚С‹
+      //citnote
       if (cell.getAttribute('type') == 'citation') {
         let tr1 = document.createElement('tr');
 
@@ -285,7 +335,6 @@ function launchGraph(editor, graphContainer)
 
         let td12 = document.createElement('td');
         td12.style.textAlign = 'top';
-        //td12.style.fontSize = '14px';
 
         td12.style.paddingLeft = '5px';
         td12.style.borderLeft = '2px solid #ccc';
@@ -301,12 +350,19 @@ function launchGraph(editor, graphContainer)
 
         let td21 = document.createElement('td');
         let img2 = document.createElement('img');
-        img2.src = '../images/file-document-outline.png';
+
+        if (isString(previewlink)&&(previewlink!='none')) {
+          img2.src = previewlink;
+          img2.style.width = '40px';
+        }
+        else {
+          img2.src = '../images/file-document-outline.png';
+          getThumbnailLink(cell,img2);
+        }
         td21.appendChild(img2);
 
         let td22 = document.createElement('td');
         td22.style.textAlign = 'top';
-        //td22.style.fontSize = '14px';
 
         mxUtils.write(td22, cell.getAttribute('name', ''));
         td22.onclick = function() {
@@ -358,34 +414,42 @@ function launchToolbar(editor)
   launchShowTextButton();
 }
 
+//SAVE PROJECT
+
+function saveProject(graph) {
+  console.log("ass");
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+
+    let encoder = new mxCodec();
+    let result = encoder.encode(graph.getModel());
+    let xml = mxUtils.getXml(result);
+
+    let file = new Blob([xml], { type: 'text/xml' });
+
+    let form = new FormData();
+
+    form.append('file', file);
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('PATCH', 'https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.setRequestHeader('Content-Type', 'text/xml');
+    xhr.responseType = 'json';
+    xhr.onload = () => {
+      //console.log(xhr.response);
+    };
+    xhr.send(file);
+
+    });
+}
+
+//autosave
+//setInterval(function() {  saveProject(tempGraph); }, 1000 * 60 * 3);
+
 function launchSaveButton(graph)
 {
   let saveButton = document.getElementById('saveButton');
-  saveButton.addEventListener('click', function () {
-    chrome.identity.getAuthToken({ interactive: true }, function (token) {
-
-      let encoder = new mxCodec();
-      let result = encoder.encode(graph.getModel());
-      let xml = mxUtils.getXml(result);
-
-      let file = new Blob([xml], { type: 'text/xml' });
-
-      let form = new FormData();
-
-      form.append('file', file);
-
-      let xhr = new XMLHttpRequest();
-      xhr.open('PATCH', 'https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media');
-      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-      xhr.setRequestHeader('Content-Type', 'text/xml');
-      xhr.responseType = 'json';
-      xhr.onload = () => {
-        //console.log(xhr.response);
-      };
-      xhr.send(file);
-
-      });
-  });
+  saveButton.addEventListener('click', function() {saveProject(graph)});
 }
 
 function launchNoteToolbar(graph, noteToolbar)
@@ -412,6 +476,15 @@ function launchNoteToolbar(graph, noteToolbar)
   addLinkNote(graph, toolbar, '../images/link-box-variant-outline-24px.png', 100, 40, '');
   addDocumentNote(graph, toolbar, '../images/file-document-outline-24px.png', 100, 40, '');
   addCitationNote(graph, toolbar, '../images/comment-quote-outline-24px.png', 100, 80, '');
+
+  // Customize images for notes in toolbar
+  let icons = document.getElementsByClassName("mxToolbarMode");
+  for (let i = 0; i < icons.length; i++) {
+    icons[i].style.width = '30px';
+    icons[i].style.height = '30px';
+    icons[i].style.margin = '0';
+    icons[i].classList.add('toolbar-icon');
+  }
 }
 
 function addTextNote(graph, toolbar, icon, w, h, style)
@@ -452,6 +525,7 @@ function addDocumentNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('type', 'document');
   note.setAttribute('document', '');
   note.setAttribute('name', '');
+  note.setAttribute('previewlink', 'none');
 
   style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
@@ -469,6 +543,7 @@ function addCitationNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('document', '');
   note.setAttribute('name', '');
   note.setAttribute('citation', '');
+  note.setAttribute('previewlink', 'none');
 
   style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
@@ -494,7 +569,7 @@ function addToolbarItem(graph, toolbar, prototype, image)
 
     graph.setSelectionCells(graph.importCells([vertex], 0, 0, cell));
 
-    // Fixing bad layout
+    // Fix bad layout
     setTimeout(function(){
       graph.refresh();
     }, 5);
@@ -504,13 +579,6 @@ function addToolbarItem(graph, toolbar, prototype, image)
   // Creates the image which is used as the drag icon (preview)
   let img = toolbar.addMode(null, image, funct);
   mxUtils.makeDraggable(img, graph, funct);
-
-  // Customize images for notes in toolbar
-  let icons = document.getElementsByClassName("mxToolbarMode");
-  for (let i = 0; i < icons.length; i++) {
-    icons[i].style.width = '30px';
-    icons[i].style.height = '30px';
-  }
 }
 
 function launchFontToolbar(graph)
@@ -717,7 +785,9 @@ function selectionChanged(graph, cell)
     for (let i = 0; i < attrs.length; i++)
     {
       // Creates the textfield for the given property.
-      createTextField(graph, form, cell, attrs[i]);
+      if (attrs[i].name != 'previewlink') {
+        createTextField(graph, form, cell, attrs[i]);
+      }
     }
 
     div.appendChild(form.getTable());
@@ -836,3 +906,91 @@ function calcMargins() {
   let editor = document.getElementsByClassName('editor')[0];
   editor.style.marginTop = header.offsetHeight + toolbar.offsetHeight + 'px';
 }
+
+
+//mike
+function launchChangeBorderWidth1(graph)
+{
+  let borderWidthButton = document.getElementById('changeBorderWidth1');
+  borderWidthButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeWidth', 7);
+    graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderWidth2(graph)
+{
+  let borderWidthButton = document.getElementById('changeBorderWidth2');
+  borderWidthButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeWidth', 4);
+    graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderWidth3(graph)
+{
+  let borderWidthButton = document.getElementById('changeBorderWidth3');
+  borderWidthButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeWidth', 2);
+    graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderColor1(graph)
+{
+  let borderColorButton = document.getElementById('changeBorderColor1');
+  borderColorButton.addEventListener('click', function() {
+
+      graph.setCellStyles('strokeColor', '#ff1100');
+      graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderColor2(graph)
+{
+  let borderColorButton = document.getElementById('changeBorderColor2');
+  borderColorButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeColor', '#0011ff');
+    graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderColor3(graph)
+{
+  let borderColorButton = document.getElementById('changeBorderColor3');
+  borderColorButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeColor', '#11ff11');
+    graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+function launchChangeBorderColor4(graph)
+{
+  let borderColorButton = document.getElementById('changeBorderColor4');
+  borderColorButton.addEventListener('click', function() {
+
+    graph.setCellStyles('strokeColor', '#000000');
+    graph.setCellStyles('shadow', 0);
+
+    graph.refresh();
+  });
+}
+
+//mike

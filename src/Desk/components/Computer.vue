@@ -77,7 +77,7 @@ function uploadFile(t) {
     t.message = "Загрузка файла на диск..."
 
     let xhr = new XMLHttpRequest();
-    xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name');
+    xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,thumbnailLink');
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.responseType = 'json';
     xhr.onload = () => {
