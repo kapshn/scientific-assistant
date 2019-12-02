@@ -1,14 +1,14 @@
 <template>
   <router-link id="project" class="project" :to="{ name: 'desk', query: { id: project.id, name: project.name, docId: project.docId, folderId: project.folderId} }" @click.native="ConfirmRedirect($event)">
     <i class="material-icons project__img">folder</i>
-    <div class="project__name" v-if="!editVisibility" >
+    <div class="project__name" v-if="!project.editing" >
       {{project.name}}
     </div>
-    <input type="text" v-if="editVisibility" id="projectName" class="project__nameEdit" :value="project.name">
-    <i class="material-icons project__apply" v-if="editVisibility" v-on:click="ApplyFileName();">done</i>
-    <i class="material-icons project__cancel" v-if="editVisibility" v-on:click="CancelEdit();">clear</i>
-    <i class="material-icons project__edit" v-if="!editVisibility" v-on:click="EditFileName();">create</i>
-    <i class="material-icons project__delete" v-if="!editVisibility" v-on:click="SelectFile();">delete</i>
+    <input type="text" v-if="project.editing" id="projectName" class="project__nameEdit" :value="project.name">
+    <i class="material-icons project__apply" v-if="project.editing" v-on:click="ApplyFileName();">done</i>
+    <i class="material-icons project__cancel" v-if="project.editing" v-on:click="CancelEdit();">clear</i>
+    <i class="material-icons project__edit" v-if="!project.editing" v-on:click="EditFileName();">create</i>
+    <i class="material-icons project__delete" v-if="!project.editing" v-on:click="SelectFile();">delete</i>
   </router-link>
 
 </template>
@@ -18,11 +18,12 @@
 <style lang="scss" scoped>
 .project {
   text-decoration: none;
-  color: black;
+  color: #8B8B8B;
   opacity: 0.6;
   padding: 10px;
   flex: 0 0 28%;
   margin: 15px;
+  max-width: 438px;
   border: 1px solid grey;
   display: flex;
   flex-direction: row;
@@ -31,19 +32,21 @@
 
   &__img {
     font-size: 25px;
+    color: #333;
   }
 
   &__name {
-    color: black;
+    color: #333;
     margin-left: 15px;
-    font-size: 24px;
+    font-size: 18px;
+    overflow: hidden;
   }
 
   &__nameEdit {
     border: none;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #333;
     outline: none;
-    font-size: 24px;
+    font-size: 18px;
     width: 100%;
     margin: 0 5px;
   }
@@ -52,7 +55,7 @@
       cursor: pointer;
       &:hover {
         color: red;
-        text-shadow: #333 2px 2px 2px;
+        font-size: 25px;
       }
   }
 
@@ -60,7 +63,7 @@
     cursor: pointer;
     &:hover {
       color: green;
-      text-shadow: #333 2px 2px 2px;
+      font-size: 25px;
     }
   }
 
@@ -71,10 +74,11 @@
     font-size: 18px;
     margin-right: 5px;
     cursor: pointer;
-    color: #444;
+    color: #8B8B8B;
+    transition: 0.3s ease-in-out;
     &:hover {
-      color: black;
-      text-shadow: #333 2px 2px 2px;
+      color: #636363;
+      font-size: 19px;
     }
   }
 
@@ -84,10 +88,12 @@
     font-size: 18px;
     margin-right: 5px;
     cursor: pointer;
-    color: #444;
+    color: #8B8B8B;
+    transition: 0.3s ease-in-out;
     &:hover {
-      color: black;
-      text-shadow: #333 2px 2px 2px;
+      color: #636363;
+      font-size: 19px;
+      //text-shadow: #333 2px 2px 2px;
     }
   }
 

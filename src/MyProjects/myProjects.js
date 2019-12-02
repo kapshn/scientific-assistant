@@ -4,11 +4,13 @@ import Project from './components/Project.vue'
 
 Vue.component('Project', Project);
 
+
 var current_token;
 
 export default {
   data () {
     return {
+      loading: false,
       projects: null,
       profile: '',
       visible: false,
@@ -25,11 +27,80 @@ export default {
     LogOut: function() {
       logOut();
     },
+    editing(_project,edit) {
+      if (edit==true) {
+        this.projects.forEach(b => {
+          if (b!=_project) b.editing = false
+          else b.editing = true;
+        })
+      } else {
+        _project.editing = false;
+      }
+
+    },
     CloseModal: function() { closeModal(this); },
     DeleteFile: function() { deleteFile(this); },
     SetModalWindowMark: function() { setModalWindowMark(this); },
     CreateFile: function() { createFile(this); },
     Rerender: function() { getFilesList(this); },
+    //RENAME FILES
+    renameFile(newName) {
+      if (newName == '') {
+        alert("Введите название файла!");
+      } else {
+        let found = this.projects.find(obj =>
+          obj.name == newName
+        )
+        if (typeof(found) != "undefined") {
+          alert("Файл с таким названием уже существует!");
+        }
+        else {
+          this.loading = true;
+          chrome.identity.getAuthToken({ interactive: true }, (token) => {
+            let metadata = {
+                'name': newName
+            };
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('PATCH', 'https://www.googleapis.com/drive/v3/files/' + this.selectedProject.id);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Accept', 'application/json');
+            xhr.responseType = 'json';
+            xhr.onload = () => {
+              this.renameDoc(newName,this.selectedProject.docId);
+            };
+            xhr.send(JSON.stringify(metadata));
+
+          });
+
+          this.editing(this.selectedProject,false)
+        }
+      }
+
+
+    },
+    renameDoc(name, docId) {
+
+      chrome.identity.getAuthToken({ interactive: true }, (token) =>{
+
+        let metadata = {
+            'name': name
+        };
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('PATCH', 'https://www.googleapis.com/drive/v3/files/' + docId);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.responseType = 'json';
+        xhr.onload = () => {
+          getFilesList(this);
+        };
+        xhr.send(JSON.stringify(metadata));
+
+      });
+    }
   },
   mounted: function() {
     getAppFolder(this);
@@ -55,7 +126,6 @@ function getAppFolder(t) {
       xhr.onload = () => {
         if (xhr.response.files.length==0) {
           createFolder(t);
-          getFilesList(t);
         } else {
           t.folderId = xhr.response.files[0].id;
           getChildFolders(t,t.folderId);
@@ -64,6 +134,15 @@ function getAppFolder(t) {
 
       };
       xhr.send();
+
+      var x = new XMLHttpRequest();
+      x.open('GET', 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json');
+      x.setRequestHeader('Authorization', 'Bearer ' + token);
+      x.responseType = 'json';
+      x.onload = function() {
+        t.profile = x.response.email;
+      };
+      x.send();
 
     });
 }
@@ -85,7 +164,6 @@ function getChildFolders(t,parent) {
           t.filesFolderId = xhr.response.files[0].id;
         }
         getFilesList(t);
-        //console.log(t.docsFolderId,t.filesFolderId)
     };
     xhr.send();
   });
@@ -109,7 +187,6 @@ function createFolder(t) {
       t.folderId = xhr.response.id;
       createSubFolders(t,"Files");
       createSubFolders(t,"Docs");
-      //console.log(t.folderId,t.filesFolderId,t.docsFolderId);
     };
     xhr.send(form);
 
@@ -132,9 +209,14 @@ function createSubFolders(t,folderName) {
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.responseType = 'json';
     xhr.onload = () => {
-      if (folderName=="Files") t.filesFolderId = xhr.response.id;
-      else t.docsFolderId = xhr.response.id;
-
+      if (folderName=="Files") {
+        t.filesFolderId = xhr.response.id;
+        if (t.docsFolderId != null) getFilesList(t);
+      }
+      else {
+        t.docsFolderId = xhr.response.id;
+        if (t.filesFolderId != null) getFilesList(t);
+      }
     };
     xhr.send(form);
 
@@ -142,7 +224,7 @@ function createSubFolders(t,folderName) {
 }
 
 function getFilesList(t) {
-
+    t.loading = true;
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
       current_token = token;
       var xhr = new XMLHttpRequest();
@@ -156,7 +238,8 @@ function getFilesList(t) {
               id: f.id,
               name: f.name,
               folderId: "",
-              docId: ""
+              docId: "",
+              editing: false
             }
             return a
           }
@@ -164,15 +247,6 @@ function getFilesList(t) {
         getAssociatedDocs(t);
       };
       xhr.send();
-
-      var x = new XMLHttpRequest();
-      x.open('GET', 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json');
-      x.setRequestHeader('Authorization', 'Bearer ' + token);
-      x.responseType = 'json';
-      x.onload = function() {
-        t.profile = x.response.email;
-      };
-      x.send();
 
     });
 
@@ -195,7 +269,7 @@ function getAssociatedDocs(t) {
           found.folderId = t.filesFolderId;
         }
       }
-
+      t.loading = false;
     };
     xhr.send();
   });
@@ -223,9 +297,9 @@ function deleteFile(t) {
     xhr.responseType = 'json';
     xhr.onload = () => {
       if (xhr.status == 204) {
-        let name = t.selectedProject.name
+        //let name = t.selectedProject.name;
+        deleteDoc(t,t.selectedProject.docId);
         t.selectedProject = null;
-        //setTimeout(() => alert("Проект: " + name + " успешно удалён!"), 1);
       }
       getFilesList(t);
     };
@@ -233,6 +307,17 @@ function deleteFile(t) {
 
   });
 
+}
+
+function deleteDoc(t,docId) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+    current_token = token;
+    var xhr = new XMLHttpRequest();
+    xhr.open('DELETE', "https://www.googleapis.com/drive/v3/files/" + docId);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.responseType = 'json';
+    xhr.send();
+  });
 }
 
 function createFile(t) {
@@ -291,13 +376,13 @@ function createDoc(t,docName) {
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.responseType = 'json';
     xhr.onload = () => {
-      //console.log(xhr.response);
       getFilesList(t);
     };
     xhr.send(form);
 
   });
 }
+
 
 function setModalWindowMark(t) {
   t.visible = true; t.deleteMark = false;

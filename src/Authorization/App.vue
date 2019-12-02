@@ -20,6 +20,21 @@
     data () {
       return {}
     },
+    beforeRouteLeave  (to, from, next) {
+      chrome.identity.getAuthToken({ interactive: true }, function (token) {
+        var x = new XMLHttpRequest();
+        x.open('GET', 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json');
+        x.setRequestHeader('Authorization', 'Bearer ' + token);
+        x.responseType = 'json';
+        x.onload = function() {
+          next();
+        };
+        x.send();
+
+      });
+
+    }
+
   }
 </script>
 
@@ -34,6 +49,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    position: relative;
 
     &__img {
       width: 130px;
@@ -78,7 +94,7 @@
       font-size: 25px;
       line-height: 117px;
       color: #373737;
-      font-family: "Roboto";
+      font-family: 'Roboto', sans-serif;
       font-weight: 300;
     }
 

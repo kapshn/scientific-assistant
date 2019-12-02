@@ -10,6 +10,8 @@ import SaveIcon from 'vue-material-design-icons/ContentSaveOutline.vue';
 import UndoIcon from 'vue-material-design-icons/Undo.vue';
 import RedoIcon from 'vue-material-design-icons/Redo.vue';
 import { isString } from 'util';
+import FormatColorFill from 'vue-material-design-icons/FormatColorFill.vue';
+import FormatLineWeight from 'vue-material-design-icons/FormatLineWeight.vue';
 
 Vue.component('ModalWindow', ModalWindow);
 Vue.component('TextIcon', TextIcon);
@@ -20,6 +22,8 @@ Vue.component('FolderOpenIcon', FolderOpenIcon);
 Vue.component('SaveIcon', SaveIcon);
 Vue.component('UndoIcon', UndoIcon);
 Vue.component('RedoIcon', RedoIcon);
+Vue.component('FormatColorFill', FormatColorFill);
+Vue.component('FormatLineWeight', FormatLineWeight);
 
 let context;
 let fileId;
@@ -57,9 +61,16 @@ function selectFile(file,t) {
     tempGraph.getModel().beginUpdate();
     try
     {
+      let thumbLink = file.thumbnailLink
+      if (typeof(file.thumbnailLink) == "undefined") {
+        thumbLink = 'none';
+      }
+
+      //console.log(thumbLink);
+
       let edit = new mxCellAttributeChange(tempCell, 'document', file.id);
       let edit2 = new mxCellAttributeChange(tempCell, 'name', file.name);
-      let edit3 = new mxCellAttributeChange(tempCell, 'previewlink', file.thumbnailLink);
+      let edit3 = new mxCellAttributeChange(tempCell, 'previewlink', thumbLink);
       tempGraph.getModel().execute(edit);
       tempGraph.getModel().execute(edit2);
       tempGraph.getModel().execute(edit3);
@@ -133,6 +144,7 @@ function launchEditor(xmlBody)
 
     let editor = new mxEditor();
     launchGraph(editor, document.getElementById('graphContainer'));
+    tempGraph = editor.graph;
 
     let doc = mxUtils.parseXml(xmlBody);
     let codec = new mxCodec(doc);
@@ -150,13 +162,12 @@ function launchEditor(xmlBody)
     launchChangeBorderWidth1(editor.graph);
     launchChangeBorderWidth2(editor.graph);
     launchChangeBorderWidth3(editor.graph);
+    launchChangeBorderWidth4(editor.graph);
 
     launchChangeBorderColor1(editor.graph);
     launchChangeBorderColor2(editor.graph);
     launchChangeBorderColor3(editor.graph);
     launchChangeBorderColor4(editor.graph);
-
-    launchClearBorderButton(editor.graph);
     //mike
 
     calcMargins();
@@ -166,6 +177,23 @@ function launchEditor(xmlBody)
       editor.graph.refresh();
     }, 15);
   }
+}
+
+function getThumbnailLink(cell,img) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('get', "https://www.googleapis.com/drive/v3/files/" + cell.getAttribute('document') + "?fields=thumbnailLink");
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.responseType = 'json';
+    xhr.onload = () => {
+      if (xhr.status == 200 && typeof(xhr.response.thumbnailLink) != "undefined") {
+        img.src = xhr.response.thumbnailLink;
+        img.style.width = '40px';
+        cell.setAttribute('previewlink', xhr.response.thumbnailLink);
+      }
+    };
+    xhr.send();
+  });
 }
 
 function launchGraph(editor, graphContainer)
@@ -220,134 +248,128 @@ function launchGraph(editor, graphContainer)
   {
     if(cell.isVertex())
     {
-      let body = document.createElement('tbody');
-      let table = document.createElement('table');
-
-      table.style.padding = '20px';
-      table.style.paddingBottom = '10px';
-      table.style.paddingTop = '10px';
-      table.style.color = '#000000';
+      let note = document.createElement('div');
+      note.classList.add('note');
 
       var previewlink = cell.getAttribute('previewlink');
 
       //textNote
       if (cell.getAttribute('type') == 'text') {
-        let tr = document.createElement('tr');
-        let td = document.createElement('td');
+        let note__text = document.createElement('div');
+        note__text.classList.add('note__text');
 
-        td.style.textAlign = 'left';
-
-        mxUtils.write(td, cell.getAttribute('text', ''));
-        tr.appendChild(td);
-        body.appendChild(tr);
+        //mxUtils.write(note_text__text, cell.getAttribute('text', ''));
+        note__text.innerText = cell.getAttribute('text', '');
+        note.appendChild(note__text);
       }
 
       //linknote
       if (cell.getAttribute('type') == 'link') {
-        let tr = document.createElement('tr');
+        let note_link = document.createElement('div');
+        note_link.classList.add('note-link');
 
-        let td1 = document.createElement('td');
-        let td2 = document.createElement('td');
-        let img = document.createElement('img');
-        img.src = '../images/link-variant.png';
-        td1.appendChild(img);
+        let note_link__img = document.createElement('img');
+        note_link__img.src = '../images/link.png';
+        note_link__img.classList.add('note-link__img');
 
-        td2.style.textAlign = 'center';
+        let note_link__name = document.createElement('div');
+        note_link__name.classList.add('note-link__name');
+        mxUtils.write(note_link__name, cell.getAttribute('name', ''));
 
-        mxUtils.write(td2, cell.getAttribute('name', ''));
-        td2.onclick = function() {
+        note_link__img.onclick = function() {
           window.open(cell.getAttribute('link', ''));
         };
 
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        body.appendChild(tr);
+        note_link.appendChild(note_link__img);
+        note_link.appendChild(note_link__name);
+        note.appendChild(note_link);
       }
 
       //docnote
       if (cell.getAttribute('type') == 'document') {
-        let tr = document.createElement('tr');
+        let note_doc = document.createElement('div');
+        note_doc.classList.add('note-doc');
 
-        let td1 = document.createElement('td');
-        let img = document.createElement('img');
+        let note_doc__img = document.createElement('img');
+        note_doc__img.classList.add('note-doc__img');
 
-        if (isString(previewlink)) {
-          img.src = previewlink;
-          img.style.width = '40px';
+        if (isString(previewlink)&&(previewlink!='none')) {
+          note_doc__img.src = previewlink;
+          note_doc__img.style.width = '40px';
         }
         else {
-          img.src = '../images/file-document-outline.png';
+          note_doc__img.src = '../images/doc.png';
+          if (cell.getAttribute('document','cum')!='cum') getThumbnailLink(cell,note_doc__img);
         }
-        td1.appendChild(img);
 
-        let td2 = document.createElement('td');
-        td2.style.textAlign = 'top';
+        let note_doc__name = document.createElement('div');
+        note_doc__name.classList.add('note-doc__name');
+        mxUtils.write(note_doc__name, cell.getAttribute('name', ''));
 
-
-        mxUtils.write(td2, cell.getAttribute('name', ''));
-        td2.onclick = function() {
+        note_doc__img.onclick = function() {
           window.open('https://drive.google.com/open?id=' + cell.getAttribute('document', ''));
         };
 
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        body.appendChild(tr);
+        note_doc.appendChild(note_doc__img);
+        note_doc.appendChild(note_doc__name);
+        note.appendChild(note_doc);
       }
 
       //citnote
       if (cell.getAttribute('type') == 'citation') {
-        let tr1 = document.createElement('tr');
+        let note_cit = document.createElement('div');
+        note_cit.classList.add('note-cit');
 
-        let td11 = document.createElement('td');
-        td11.style.paddingRight = '5px';
-        let img1 = document.createElement('img');
-        img1.src = '../images/format-quote-close.png';
-        td11.appendChild(img1);
+        //Цитата
+        let note_cit_quote = document.createElement('div');
+        note_cit_quote.classList.add('note-cit-quote');
 
-        let td12 = document.createElement('td');
-        td12.style.textAlign = 'top';
+        let note_cit_quote__img = document.createElement('img');
+        note_cit_quote__img.src = '../images/quote.png';
+        note_cit_quote__img.classList.add('note-cit-quote__img');
 
-        td12.style.paddingLeft = '5px';
-        td12.style.borderLeft = '2px solid #ccc';
-        td12.style.borderLeftStyle = 'height=\'30%\'';
+        let note_cit_quote__text = document.createElement('div');
+        note_cit_quote__text.classList.add('note-cit-quote__text');
+        note_cit_quote__text.innerText = cell.getAttribute('citation', '');
 
+        note_cit_quote.appendChild(note_cit_quote__img);
+        note_cit_quote.appendChild(note_cit_quote__text);
 
-        mxUtils.write(td12, cell.getAttribute('citation', ''));
+        //Док
+        let note_cit_doc = document.createElement('div');
+        note_cit_doc.classList.add('note-cit-doc');
 
-        tr1.appendChild(td11);
-        tr1.appendChild(td12);
+        let note_cit_doc__img = document.createElement('img');
+        note_cit_doc__img.classList.add('note-cit-doc__img');
 
-        let tr2 = document.createElement('tr');
+        let note_cit_doc__text = document.createElement('div');
+        note_cit_doc__text.classList.add('note-cit-doc__text');
+        mxUtils.write(note_cit_doc__text, cell.getAttribute('name', ''));
 
-        let td21 = document.createElement('td');
-        let img2 = document.createElement('img');
-        if (isString(previewlink)) {
-          img2.src = previewlink;
-          img2.style.width = '40px';
-        }
-        else {
-          img2.src = '../images/file-document-outline.png';
-        }
-        td21.appendChild(img2);
-
-        let td22 = document.createElement('td');
-        td22.style.textAlign = 'top';
-
-        mxUtils.write(td22, cell.getAttribute('name', ''));
-        td22.onclick = function() {
+        note_cit_doc__img.onclick = function() {
           window.open('https://drive.google.com/open?id=' + cell.getAttribute('document', ''));
         };
 
-        tr2.appendChild(td21);
-        tr2.appendChild(td22);
+        if (isString(previewlink)&&(previewlink!='none')) {
+          note_cit_doc__img.src = previewlink;
+          note_cit_doc__img.style.width = '40px';
+        }
+        else {
+          note_cit_doc__img.src = '../images/doc.png';
+          if (cell.getAttribute('document','cum')!='cum') getThumbnailLink(cell,note_cit_quote__img);
+        }
 
-        body.appendChild(tr1);
-        body.appendChild(tr2);
+        note_cit_doc.appendChild(note_cit_doc__img);
+        note_cit_doc.appendChild(note_cit_doc__text);
+
+        note_cit.appendChild(note_cit_quote);
+        note_cit.appendChild(note_cit_doc);
+
+        note.appendChild(note_cit);
+
       }
 
-      table.appendChild(body);
-
-      return table;
+      return note;
     }
   };
 }
@@ -383,33 +405,53 @@ function launchToolbar(editor)
   launchShowTextButton();
 }
 
+//SAVE PROJECT
+
+function saveProject(graph) {
+  chrome.identity.getAuthToken({ interactive: true }, function (token) {
+
+    let encoder = new mxCodec();
+    let result = encoder.encode(graph.getModel());
+    let xml = mxUtils.getXml(result);
+
+    let file = new Blob([xml], { type: 'text/xml' });
+
+    let form = new FormData();
+
+    form.append('file', file);
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('PATCH', 'https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.setRequestHeader('Content-Type', 'text/xml');
+    xhr.responseType = 'json';
+    xhr.onload = () => {
+      let notify = document.getElementsByClassName('notify')[0];
+      notify.style.display = "block";
+      setTimeout(() => {
+        notify.classList.add('notify__show');
+
+        setTimeout(() => {
+          notify.classList.remove('notify__show');
+          setTimeout(() => {
+            notify.style.display = "none";
+          }, 300);
+        }, 2000);
+
+      }, 5);
+    };
+    xhr.send(file);
+
+    });
+}
+
+//autosave
+setInterval(function() {  saveProject(tempGraph); }, 1000 * 60 * 3);
+
 function launchSaveButton(graph)
 {
   let saveButton = document.getElementById('saveButton');
-  saveButton.addEventListener('click', function () {
-    chrome.identity.getAuthToken({ interactive: true }, function (token) {
-
-      let encoder = new mxCodec();
-      let result = encoder.encode(graph.getModel());
-      let xml = mxUtils.getXml(result);
-
-      let file = new Blob([xml], { type: 'text/xml' });
-
-      let form = new FormData();
-
-      form.append('file', file);
-
-      let xhr = new XMLHttpRequest();
-      xhr.open('PATCH', 'https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media');
-      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-      xhr.setRequestHeader('Content-Type', 'text/xml');
-      xhr.responseType = 'json';
-      xhr.onload = () => {
-      };
-      xhr.send(file);
-
-      });
-  });
+  saveButton.addEventListener('click', function() {saveProject(graph)});
 }
 
 function launchNoteToolbar(graph, noteToolbar)
@@ -442,6 +484,7 @@ function launchNoteToolbar(graph, noteToolbar)
   for (let i = 0; i < icons.length; i++) {
     icons[i].style.width = '30px';
     icons[i].style.height = '30px';
+    icons[i].style.margin = '0';
     icons[i].classList.add('toolbar-icon');
   }
 }
@@ -484,7 +527,7 @@ function addDocumentNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('type', 'document');
   note.setAttribute('document', '');
   note.setAttribute('name', '');
-  note.setAttribute('previewlink', '');
+  note.setAttribute('previewlink', 'none');
 
   style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
@@ -502,7 +545,7 @@ function addCitationNote(graph, toolbar, icon, w, h, style)
   note.setAttribute('document', '');
   note.setAttribute('name', '');
   note.setAttribute('citation', '');
-  note.setAttribute('previewlink', '');
+  note.setAttribute('previewlink', 'none');
 
   style = 'fillColor=#ffffff;strokeColor=#d9d9d9;shadow=1;fontSize=14;';
 
@@ -736,8 +779,9 @@ function selectionChanged(graph, cell)
     // div.appendChild(center);
     // mxUtils.br(div);
 
-    // Creates the form from the attributes of the user object
-    let form = new mxForm();
+    // ASS
+    let form = document.createElement('div');
+    form.classList.add('modal-window-form');
 
     let attrs = cell.value.attributes;
 
@@ -749,8 +793,8 @@ function selectionChanged(graph, cell)
       }
     }
 
-    div.appendChild(form.getTable());
-    mxUtils.br(div);
+    div.appendChild(form);
+    //mxUtils.br(div);
 
     // Show file button
     if(cell.hasAttribute('document'))
@@ -770,10 +814,31 @@ function createTextField(graph, form, cell, attribute)
     return;
   } else if (attribute.nodeName == 'text' || attribute.nodeName == 'citation')
   {
-    input = form.addTextarea(translateFieldName(attribute.nodeName) + ':', attribute.nodeValue);
+    let name = document.createElement('div');
+    name.classList.add('modal-window-form__name');
+    name.innerHTML = translateFieldName(attribute.nodeName);
+
+    let textarea = document.createElement('textarea');
+    textarea.classList.add('modal-window-form__textarea');
+    textarea.value = attribute.nodeValue;
+
+    form.appendChild(name);
+    form.appendChild(textarea);
+    input = textarea;
   } else
   {
-    input = form.addText(translateFieldName(attribute.nodeName) + ':', attribute.nodeValue);
+    let name = document.createElement('div');
+    name.classList.add('modal-window-form__name');
+    name.innerHTML = translateFieldName(attribute.nodeName);
+
+    let inp = document.createElement('input');
+    inp.classList.add('modal-window-form__input');
+    inp.setAttribute("value", attribute.nodeValue);
+
+    form.appendChild(name);
+    form.appendChild(inp);
+
+    input = inp;
   }
 
   let applyHandler = function()
@@ -873,7 +938,7 @@ function launchChangeBorderWidth1(graph)
   let borderWidthButton = document.getElementById('changeBorderWidth1');
   borderWidthButton.addEventListener('click', function() {
 
-    graph.setCellStyles('strokeWidth', 7);
+    graph.setCellStyles('strokeWidth', 6);
     graph.setCellStyles('shadow', 0);
 
     graph.refresh();
@@ -885,9 +950,9 @@ function launchChangeBorderWidth2(graph)
   let borderWidthButton = document.getElementById('changeBorderWidth2');
   borderWidthButton.addEventListener('click', function() {
 
-    graph.setCellStyles('strokeWidth', 4);
+    graph.setCellStyles('strokeWidth', 3);
     graph.setCellStyles('shadow', 0);
-    
+
     graph.refresh();
   });
 }
@@ -897,9 +962,9 @@ function launchChangeBorderWidth3(graph)
   let borderWidthButton = document.getElementById('changeBorderWidth3');
   borderWidthButton.addEventListener('click', function() {
 
-    graph.setCellStyles('strokeWidth', 2);
+    graph.setCellStyles('strokeWidth', 1);
     graph.setCellStyles('shadow', 0);
-    
+
     graph.refresh();
   });
 }
@@ -935,7 +1000,7 @@ function launchChangeBorderColor3(graph)
 
     graph.setCellStyles('strokeColor', '#11ff11');
     graph.setCellStyles('shadow', 0);
-    
+
     graph.refresh();
   });
 }
@@ -944,29 +1009,30 @@ function launchChangeBorderColor4(graph)
 {
   let borderColorButton = document.getElementById('changeBorderColor4');
   borderColorButton.addEventListener('click', function() {
-    
+
     graph.setCellStyles('strokeColor', '#000000');
     graph.setCellStyles('shadow', 0);
-    
+
     graph.refresh();
   });
 }
 
-function launchClearBorderButton(graph)
+function launchChangeBorderWidth4(graph)
 {
-  let clearBorderButton = document.getElementById('clearBorderButton');
+  let clearBorderButton = document.getElementById('changeBorderWidth4');
   clearBorderButton.addEventListener('click', function() {
     let selectedCells = graph.getSelectionCells();
     for (var i = 0; i < selectedCells.length; i++)
       {
         if (selectedCells[i].vertex) {
-          selectedCells[i].style += ';strokeColor=#d9d9d9' + ';strokeWidth=1' + ';shadow=1';
+          selectedCells[i].style +=';strokeWidth=1' + ';shadow=1';
         }
         else {
-          selectedCells[i].style += ';strokeColor=#6699cc' + ';strokeWidth=1' + ';shadow=0';
+          selectedCells[i].style +=';strokeWidth=1' + ';shadow=0';
         }
       }
     graph.refresh();
   });
 }
+
 //mike
