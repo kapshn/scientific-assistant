@@ -4,7 +4,14 @@
       <router-link :to="{ name: 'drive' }" class="links__item">Google Drive</router-link>
       <div class="links__item links__selected">Компьютер</div>
     </div>
-    <div class="computer">
+    <div class="loading" v-if="loading">
+      <Stretch background="#0870b7" size="150px"></Stretch>
+      <div class="">
+        Загрузка файла<br>
+        {{uploadFile.name}}
+      </div>
+    </div>
+    <div v-else class="computer">
       <div class="computer__upload" v-if="folderId!=null" v-cloak @drop.prevent="addFile" @dragover.prevent>
 
         <div class="computer-dnd">
@@ -37,7 +44,8 @@
 export default {
   data () {
     return {
-      uploadFile: null
+      uploadFile: null,
+      loading: false
     }
   },
   props: ['folderId'],
@@ -60,6 +68,7 @@ export default {
 }
 
 function uploadFile(t) {
+  t.loading = true;
   let file = t.uploadFile;
 
   chrome.identity.getAuthToken({ interactive: true }, function (token) {
@@ -81,6 +90,7 @@ function uploadFile(t) {
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.responseType = 'json';
     xhr.onload = () => {
+      t.loading = false;
       t.$emit('FileSelected',xhr.response);
     };
     xhr.send(form);
@@ -92,6 +102,18 @@ function uploadFile(t) {
 </script>
 
 <style lang="scss" scoped>
+.loading {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  div {
+    margin-top: 15px;
+    font-size: 30px;
+    text-align: center;
+  }
+}
+
 #computer {
   height: 100%;
   display: flex;
@@ -100,7 +122,7 @@ function uploadFile(t) {
 
 .computer {
   background-color: rgb(230,230,230);
-  height: 100%;
+  height: calc(100% - 40px);
   width: 100%;
   position: relative;
 
@@ -149,6 +171,9 @@ function uploadFile(t) {
       &:disabled {
         display: none;
       }
+      &:hover {
+        background-color: #005a97;
+      }
     }
   }
 }
@@ -185,6 +210,11 @@ function uploadFile(t) {
   margin-bottom: 20px;
   cursor: pointer;
 }
+
+.file-select > .select-button:hover {
+  background-color: #178a52;
+}
+
 
 /* Don't forget to hide the original file input! */
 .file-select > input[type="file"] {

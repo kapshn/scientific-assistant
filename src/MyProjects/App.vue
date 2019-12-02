@@ -11,7 +11,7 @@
       </div>
     </header>
 
-    <div class="projects">
+    <div class="projects" >
       <div class="projects__head">
         <h3 class="projects__title">Мои проекты</h3>
         <i class="material-icons projects__additem"
@@ -19,12 +19,19 @@
         >add_circle</i>
       </div>
       <div class="projects-block">
-        <Project
+        <div class="loading" v-if="loading">
+          <Stretch background="#0870b7"></Stretch>
+        </div>
+        <Project v-else
         v-for="project in projects"
+        v-bind:key="project.id"
         v-bind:project="project"
         v-on:popupWindowVisibility="visible = $event"
         v-on:selectedProject="selectedProject = $event"
         v-on:deleteMark="deleteMark = $event;"
+        v-on:rename="renameFile($event)"
+        v-on:editing="editing($event,true)"
+        v-on:editingCancel="editing($event,false)"
         v-on:rerender="Rerender()"
         ></Project>
       </div>
@@ -37,15 +44,15 @@
           <div class="modal-window__title">Удалить проект</div>
           <div class="modal-window__titleName">{{selectedProject.name}} ?</div>
           <div class="modal-window__buttons">
-            <button type="button" @click="DeleteFile()"><i class="material-icons">delete</i></button>
+            <button type="button" @click="DeleteFile()" id="delete__button"><i class="material-icons">delete</i></button>
             <button type="button" @click="CloseModal()">отмена</button>
           </div>
       </div>
       <div class="modal-window" v-else>
-        <form action="">
+        <form action="" autocomplete="off">
           <h1 class="modal-window__title">Создать проект</h1>
           <div class="modal-window__inputTitle">Имя проекта*</div>
-          <input type="text" class="modal-window__input" id="fileName" v-model="fileName">
+          <input type="text" class="modal-window__input" id="fileName" v-model="fileName" maxlength="80">
           <div class="modal-window__buttons">
             <button class="createbutton" type="button" @click="CreateFile()" :disabled="fileName.length == 0">Создать</button>
             <button type="button" @click="CloseModal()">Отмена</button>
@@ -61,6 +68,14 @@
 <script src="./myProjects.js"></script>
 
 <style lang="scss" scoped>
+.loading {
+  height: 100%;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+  padding: 30px;
+  margin: 0 auto;
+}
 
 p {
   font-size: 20px;
@@ -76,6 +91,9 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
+  position: relative;
+  width: auto;
+  z-index: auto;
 
   &__img {
     width: 130px;
@@ -144,9 +162,15 @@ body {
 
   &__additem {
     margin-left: 15px;
+    padding-top: 4px;
     color: #0c73b8;
     text-align: center;
+    opacity: 0.8;
     cursor: pointer;
+    transition: 0.1s ease-in-out;
+    &:hover {
+      opacity: 1;
+    }
   }
 
   &-block {
@@ -192,13 +216,13 @@ body {
     &__title {
       text-align: center;
       font-weight: 400;
-      font-size: 30px;
+      font-size: 25px;
     }
 
     &__titleName {
       text-align: center;
       font-weight: 600;
-      font-size: 24px;
+      font-size: 21px;
       min-width: 300px;
       margin-bottom: 30px;
     }
@@ -248,16 +272,27 @@ body {
         background-color: white;
         font-size: 18px;
         cursor: pointer;
+        transition: 0.1s ease-in-out;
+
+        &:first-child:hover {
+          background-color: #005892;
+        }
 
         &:last-child {
           background-color: white;
           color: #777;
-
+          &:hover {
+            background-color: #EBEBEB;
+          }
         }
       }
 
     }
-
+    #delete__button:hover {
+      background-color: #c80000;
+      color: white;
+      transition: 0.1s;
+    }
   }
 }
 

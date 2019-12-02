@@ -5,7 +5,9 @@ import MyProjects from '../MyProjects/App'
 import Desk from '../Desk/App'
 import Drive from '../Desk/components/Drive.vue'
 import Computer from '../Desk/components/Computer.vue'
+import {Stretch} from 'vue-loading-spinner'
 
+Vue.component('Stretch', Stretch);
 Vue.use(VueRouter);
 
 const routes = [
