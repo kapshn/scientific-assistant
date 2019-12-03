@@ -15,7 +15,7 @@
    "manifest_version": 2,
    "name": "Научный ассистент",
    "oauth2": {
-      "client_id": "270215601557-mlcb4nb15i9352jl0kkp8vofura9fdjl.apps.googleusercontent.com",
+      "client_id": "173845474591-o5kcr6qned3pe21gicfba11dt0a8vme5.apps.googleusercontent.com",
       "scopes": [ "https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/contacts.readonly" ]
    },
    "permissions": [ "identity" ],
