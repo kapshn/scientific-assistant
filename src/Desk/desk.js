@@ -392,7 +392,20 @@ function launchUndoManager(editor)
 function launchKeyHandler(editor)
 {
   let keyHandler = new mxDefaultKeyHandler(editor);
+
+  // Handle Command key and the Control key on the Mac
+  keyHandler.getFunction = function(evt)
+  {
+    if (evt != null)
+    {
+      return (mxEvent.isControlDown(evt) || (mxClient.IS_MAC && evt.metaKey)) ? this.controlKeys[evt.keyCode] : this.normalKeys[evt.keyCode];
+    }
+    
+    return null;
+  };
+
   keyHandler.bindAction(46, 'delete');
+  keyHandler.bindAction(8, 'delete');
   keyHandler.bindAction(90, 'undo', true);
   keyHandler.bindAction(89, 'redo', true);
 }
