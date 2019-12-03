@@ -394,7 +394,7 @@ function launchKeyHandler(editor)
   let keyHandler = new mxDefaultKeyHandler(editor);
 
   // Handle Command key and the Control key on the Mac
-  keyHandler.getFunction = function(evt)
+  keyHandler.handler.getFunction = function(evt)
   {
     if (evt != null)
     {
