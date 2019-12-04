@@ -936,7 +936,7 @@ function launchChangeBorderWidth1(graph)
   borderWidthButton.addEventListener('click', function() {
 
     graph.setCellStyles('strokeWidth', 5);
-    graph.setCellStyles('shadow', 1);
+    // graph.setCellStyles('shadow', 1);
 
     graph.refresh();
   });
@@ -948,7 +948,7 @@ function launchChangeBorderWidth2(graph)
   borderWidthButton.addEventListener('click', function() {
 
     graph.setCellStyles('strokeWidth', 3);
-    graph.setCellStyles('shadow', 1);
+    // graph.setCellStyles('shadow', 1);
 
     graph.refresh();
   });
@@ -960,7 +960,7 @@ function launchChangeBorderWidth3(graph)
   borderWidthButton.addEventListener('click', function() {
 
     graph.setCellStyles('strokeWidth', 1);
-    graph.setCellStyles('shadow', 1);
+    // graph.setCellStyles('shadow', 1);
 
     graph.refresh();
   });
@@ -982,7 +982,7 @@ function launchChangeBorderColor(graph)
     borderColor[i].addEventListener('click', function() {
 
       graph.setCellStyles('strokeColor', borderColorArr[i]);
-      graph.setCellStyles('shadow', 1);
+      // graph.setCellStyles('shadow', 1);
 
     graph.refresh();
   })
@@ -994,7 +994,7 @@ function launchChangeBorderWidth4(graph)
   let clearBorderButton = document.getElementById('changeBorderWidth4');
   clearBorderButton.addEventListener('click', function() {
     graph.setCellStyles('strokeWidth', 1);
-    graph.setCellStyles('shadow', 1);
+    // graph.setCellStyles('shadow', 1);
     graph.setCellStyles('strokeColor', '#d9d9d9');
     graph.refresh();
   });
