@@ -158,18 +158,6 @@ function launchEditor(xmlBody)
 
     launchPropertiesPanel(editor.graph);
 
-    //mike
-    launchChangeBorderWidth1(editor.graph);
-    launchChangeBorderWidth2(editor.graph);
-    launchChangeBorderWidth3(editor.graph);
-    launchChangeBorderWidth4(editor.graph);
-
-    launchChangeBorderColor1(editor.graph);
-    launchChangeBorderColor2(editor.graph);
-    launchChangeBorderColor3(editor.graph);
-    launchChangeBorderColor4(editor.graph);
-    //mike
-
     calcMargins();
 
     // Fixing bad layout
@@ -415,6 +403,7 @@ function launchToolbar(editor)
   launchSaveButton(editor.graph);
   launchNoteToolbar(editor.graph, document.getElementById("noteToolbar"));
   launchFontToolbar(editor.graph);
+  launchBorderToolbar(editor.graph);
   launchShowTextButton();
 }
 
@@ -489,8 +478,8 @@ function launchNoteToolbar(graph, noteToolbar)
 
   addTextNote(graph, toolbar, '../images/alpha-t-box-outline-24px.png', 100, 40, '');
   addLinkNote(graph, toolbar, '../images/link-box-variant-outline-24px.png', 100, 40, '');
-  addDocumentNote(graph, toolbar, '../images/file-document-outline-24px.png', 100, 40, '');
-  addCitationNote(graph, toolbar, '../images/comment-quote-outline-24px.png', 100, 80, '');
+  addDocumentNote(graph, toolbar, '../images/file-document-outline-24px.png', 100, 60, '');
+  addCitationNote(graph, toolbar, '../images/comment-quote-outline-24px.png', 120, 100, '');
 
   // Customize images for notes in toolbar
   let icons = document.getElementsByClassName("mxToolbarMode");
@@ -689,6 +678,15 @@ function launchFontToolbar(graph)
     graph.setCellStyles('fontFamily', fontFamilySelect.value);
     graph.refresh();
   });
+}
+
+function launchBorderToolbar(graph)
+{
+  launchChangeBorderWidth1(graph);
+  launchChangeBorderWidth2(graph);
+  launchChangeBorderWidth3(graph);
+  launchChangeBorderWidth4(graph);
+  launchChangeBorderColor(graph);
 }
 
 function launchShowTextButton()
@@ -944,15 +942,13 @@ function calcMargins() {
   editor.style.marginTop = header.offsetHeight + toolbar.offsetHeight + 'px';
 }
 
-
-//mike
 function launchChangeBorderWidth1(graph)
 {
   let borderWidthButton = document.getElementById('changeBorderWidth1');
   borderWidthButton.addEventListener('click', function() {
 
-    graph.setCellStyles('strokeWidth', 6);
-    graph.setCellStyles('shadow', 0);
+    graph.setCellStyles('strokeWidth', 5);
+    // graph.setCellStyles('shadow', 1);
 
     graph.refresh();
   });
@@ -964,7 +960,7 @@ function launchChangeBorderWidth2(graph)
   borderWidthButton.addEventListener('click', function() {
 
     graph.setCellStyles('strokeWidth', 3);
-    graph.setCellStyles('shadow', 0);
+    // graph.setCellStyles('shadow', 1);
 
     graph.refresh();
   });
@@ -976,76 +972,53 @@ function launchChangeBorderWidth3(graph)
   borderWidthButton.addEventListener('click', function() {
 
     graph.setCellStyles('strokeWidth', 1);
-    graph.setCellStyles('shadow', 0);
+    // graph.setCellStyles('shadow', 1);
 
     graph.refresh();
   });
 }
 
-function launchChangeBorderColor1(graph)
-{
-  let borderColorButton = document.getElementById('changeBorderColor1');
-  borderColorButton.addEventListener('click', function() {
+var borderColor = document.getElementsByClassName('td-div-color');
+var borderColorArr = new Array();
 
-      graph.setCellStyles('strokeColor', '#ff1100');
-      graph.setCellStyles('shadow', 0);
+
+function launchChangeBorderColor(graph)
+{
+  for (let i = 0; i < borderColor.length; i++)
+  {
+    borderColorArr[i] = borderColor[i].style.backgroundColor;
+  };
+
+  for (let i = 0; i < borderColor.length; i++)
+  {
+    borderColor[i].addEventListener('click', function() {
+
+      graph.setCellStyles('strokeColor', borderColorArr[i]);
+      // graph.setCellStyles('shadow', 1);
 
     graph.refresh();
-  });
-}
-
-function launchChangeBorderColor2(graph)
-{
-  let borderColorButton = document.getElementById('changeBorderColor2');
-  borderColorButton.addEventListener('click', function() {
-
-    graph.setCellStyles('strokeColor', '#0011ff');
-    graph.setCellStyles('shadow', 0);
-
-    graph.refresh();
-  });
-}
-
-function launchChangeBorderColor3(graph)
-{
-  let borderColorButton = document.getElementById('changeBorderColor3');
-  borderColorButton.addEventListener('click', function() {
-
-    graph.setCellStyles('strokeColor', '#11ff11');
-    graph.setCellStyles('shadow', 0);
-
-    graph.refresh();
-  });
-}
-
-function launchChangeBorderColor4(graph)
-{
-  let borderColorButton = document.getElementById('changeBorderColor4');
-  borderColorButton.addEventListener('click', function() {
-
-    graph.setCellStyles('strokeColor', '#000000');
-    graph.setCellStyles('shadow', 0);
-
-    graph.refresh();
-  });
+  })
+  };
 }
 
 function launchChangeBorderWidth4(graph)
 {
-  let clearBorderButton = document.getElementById('changeBorderWidth4');
+  var clearBorderButton = document.getElementById('changeBorderWidth4');
   clearBorderButton.addEventListener('click', function() {
-    let selectedCells = graph.getSelectionCells();
-    for (var i = 0; i < selectedCells.length; i++)
-      {
-        if (selectedCells[i].vertex) {
-          selectedCells[i].style +=';strokeWidth=1' + ';shadow=1';
-        }
-        else {
-          selectedCells[i].style +=';strokeWidth=1' + ';shadow=0';
-        }
+    var selectedCells1 = graph.getSelectionCells();
+
+    console.log(selectedCells1);
+
+    for (let i = 0; i<selectedCells1.length; i++) {
+      graph.setCellStyles('strokeWidth', 1);
+      if (selectedCells1[i].isVertex()) {
+        graph.setCellStyles('strokeColor', '#d9d9d9', [selectedCells1[i]]);
+      } else {
+        graph.setCellStyles('strokeColor', 'rgb(100, 130, 185)', [selectedCells1[i]]);
       }
+    }
     graph.refresh();
   });
 }
 
-//mike
+

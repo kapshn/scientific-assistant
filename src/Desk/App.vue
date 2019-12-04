@@ -62,24 +62,73 @@
       </div>
 
       <div class="toolbar-border">
-        <div class="dropdown">
+        <div class="dropdown1">
           <FormatLineWeight id="changeBorderWidth" class="toolbar__item dropbtn"/>
-          <div class="dropdown-content">
-            <div id="changeBorderWidth4"></div>
+          <div class="dropdown1-content">
             <div id="changeBorderWidth3"></div>
             <div id="changeBorderWidth2"></div>
             <div id="changeBorderWidth1"></div>
           </div>
         </div>
-        <div class="dropdown">
+        <div class="dropdown2">
           <FormatColorFill id="changeBorderColor" class="toolbar__item dropbtn"/>
-          <div class="dropdown-content">
-            <div id="changeBorderColor1"></div>
-            <div id="changeBorderColor2"></div>
-            <div id="changeBorderColor3"></div>
-            <div id="changeBorderColor4"></div>
+          <div class="dropdown2-content">
+            <table>
+              <tbody>
+                <tr>
+                  <td><div class="td-div-color" style="background-color: rgb(0, 0, 0);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(67, 67, 67);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(102, 102, 102);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(153, 153, 153);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(217, 217, 217);"></div></td>
+                </tr>
+                <tr>
+                  <td><div class="td-div-color" style="background-color: rgb(153, 0, 0);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(204, 0, 0);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(224, 102, 102);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(234, 153, 153);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(244, 204, 204);"></div></td>
+                </tr>
+                <tr>
+                  <td><div class="td-div-color" style="background-color: rgb(180, 95, 6);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(230, 145, 56);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(246, 178, 107);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(249, 203, 156);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(252, 229, 205);"></div></td>
+                </tr>
+                <tr>
+                  <td><div class="td-div-color" style="background-color: rgb(191, 144, 0);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(241, 194, 50);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(255, 217, 102);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(255, 229, 153);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(255, 242, 204);"></div></td>
+                </tr>
+                <tr>
+                  <td><div class="td-div-color" style="background-color: rgb(56, 118, 29);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(106, 168, 79);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(147, 196, 125);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(182, 215, 168);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(217, 234, 211);"></div></td>
+                </tr>
+                <tr>
+                  <td><div class="td-div-color" style="background-color: rgb(17, 85, 204);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(60, 120, 216);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(109, 158, 235);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(164, 194, 244);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(201, 218, 248);"></div></td>
+                </tr>
+                <tr>
+                  <td><div class="td-div-color" style="background-color: rgb(53, 28, 117);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(103, 78, 167);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(142, 124, 195);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(180, 167, 214);"></div></td>
+                  <td><div class="td-div-color" style="background-color: rgb(217, 210, 233);"></div></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+        <div id="changeBorderWidth4"></div>
       </div>
 
     </div>
@@ -94,6 +143,22 @@
 <script src="./desk.js"></script>
 
 <style lang="scss">
+
+.td-div-color{
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+}
+
+.td-div-color:hover{
+  opacity: 0.85;
+}
+
+
+
+
+
+
 .notify {
   border-radius: 20px;
   font-size: 24px;
@@ -294,16 +359,17 @@
   cursor: pointer;
 }
 
-.dropdown {
+.dropdown1 {
   position: relative;
   display: inline-block;
   &-content {
     display: none;
     position: absolute;
-    //min-width: 160px;
+    // min-width: 122px;
     border: 1px solid #CCC;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
+    // padding: 5px;
 
     & div {
       text-decoration: none;
@@ -316,10 +382,39 @@
   }
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown2 {
+  position: relative;
+  display: inline-block;
+  &-content {
+    display: none;
+    position: absolute;
+    // min-width: 122px;
+    border: 1px solid #CCC;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    // padding: 5px;
+
+    & div {
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    & a:hover {
+      background-color: #f1f1f1
+    }
+  }
+}
+
+.dropdown1:hover .dropdown1-content {
   display: block;
   background: white;
   width: 23px;
+}
+.dropdown2:hover .dropdown2-content {
+  display: block;
+  background: white;
+  width: 122px;
+  padding: 5px;
 }
 
 .dropdown:hover .dropbtn {
@@ -484,8 +579,8 @@
 }
 #changeBorderWidth4
 {
-  height: 23px;
-  width: 23px;
+  height: 28px;
+  width: 28px;
   background: url('../images/clear-button.png') no-repeat;
   background-size: 100%;
   border: 0;
@@ -495,8 +590,6 @@
 #changeBorderWidth4:hover {
   opacity: 0.9;
 }
-
-
 
 
 
