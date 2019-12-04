@@ -158,15 +158,6 @@ function launchEditor(xmlBody)
 
     launchPropertiesPanel(editor.graph);
 
-    //mike
-    launchChangeBorderWidth1(editor.graph);
-    launchChangeBorderWidth2(editor.graph);
-    launchChangeBorderWidth3(editor.graph);
-    launchChangeBorderWidth4(editor.graph);
-
-    launchChangeBorderColor(editor.graph);
-    //mike
-
     calcMargins();
 
     // Fixing bad layout
@@ -399,6 +390,7 @@ function launchToolbar(editor)
   launchSaveButton(editor.graph);
   launchNoteToolbar(editor.graph, document.getElementById("noteToolbar"));
   launchFontToolbar(editor.graph);
+  launchBorderToolbar(editor.graph);
   launchShowTextButton();
 }
 
@@ -675,6 +667,15 @@ function launchFontToolbar(graph)
   });
 }
 
+function launchBorderToolbar(graph)
+{
+  launchChangeBorderWidth1(graph);
+  launchChangeBorderWidth2(graph);
+  launchChangeBorderWidth3(graph);
+  launchChangeBorderWidth4(graph);
+  launchChangeBorderColor(graph);
+}
+
 function launchShowTextButton()
 {
   let showTextButton = document.getElementById('showTextButton');
@@ -928,8 +929,6 @@ function calcMargins() {
   editor.style.marginTop = header.offsetHeight + toolbar.offsetHeight + 'px';
 }
 
-
-//mike
 function launchChangeBorderWidth1(graph)
 {
   let borderWidthButton = document.getElementById('changeBorderWidth1');
@@ -972,7 +971,7 @@ var borderColorArr = new Array();
 
 function launchChangeBorderColor(graph)
 {
-  for (var i = 0; i < borderColor.length; i++)
+  for (let i = 0; i < borderColor.length; i++)
   {
     borderColorArr[i] = borderColor[i].style.backgroundColor;
   };
@@ -991,13 +990,22 @@ function launchChangeBorderColor(graph)
 
 function launchChangeBorderWidth4(graph)
 {
-  let clearBorderButton = document.getElementById('changeBorderWidth4');
+  var clearBorderButton = document.getElementById('changeBorderWidth4');
   clearBorderButton.addEventListener('click', function() {
-    graph.setCellStyles('strokeWidth', 1);
-    // graph.setCellStyles('shadow', 1);
-    graph.setCellStyles('strokeColor', '#d9d9d9');
+    var selectedCells1 = graph.getSelectionCells();
+
+    console.log(selectedCells1);
+
+    for (let i = 0; i<selectedCells1.length; i++) {
+      graph.setCellStyles('strokeWidth', 1);
+      if (selectedCells1[i].isVertex()) {
+        graph.setCellStyles('strokeColor', '#d9d9d9', [selectedCells1[i]]);
+      } else {
+        graph.setCellStyles('strokeColor', 'rgb(100, 130, 185)', [selectedCells1[i]]);
+      }
+    }
     graph.refresh();
   });
 }
 
-//mike
+
